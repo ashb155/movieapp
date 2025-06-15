@@ -16,7 +16,7 @@ class MainActivity : ComponentActivity() {
             MaterialTheme (colorScheme = CustomLightColors){
                 Scaffold { paddingValues ->
                     Box(modifier = Modifier.padding(paddingValues)) {
-                        MovieListScreen()
+                        MovieNavHost()
                     }
                 }
             }

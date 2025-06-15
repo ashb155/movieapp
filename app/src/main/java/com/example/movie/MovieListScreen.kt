@@ -2,6 +2,7 @@ package com.example.movie
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,7 +16,7 @@ import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.delay
 
 @Composable
-fun MovieListScreen(viewModel: MovieViewModel = viewModel()) {
+fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int) -> Unit) {
     val movies = viewModel.movies
     val error = viewModel.error
 
@@ -68,21 +69,20 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel()) {
 
         LazyColumn {
             items(movies) { movie ->
-                MovieItem(movie)
+                MovieItem(movie = movie, onClick = { onMovieClick(movie.id) })
             }
         }
     }
 }
 
 @Composable
-fun MovieItem(movie: Movie) {
+fun MovieItem(movie: Movie, onClick: () -> Unit) {
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.tertiary
-        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .clickable { onClick() },
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(modifier = Modifier.padding(8.dp)) {

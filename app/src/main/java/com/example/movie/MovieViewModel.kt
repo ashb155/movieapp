@@ -17,7 +17,7 @@ class MovieViewModel : ViewModel() {
         fetchMovies()
     }
 
-    private fun fetchMovies() {
+   fun fetchMovies() {
         viewModelScope.launch {
             try {
                 val response = RetrofitInstance.api.getLatestMovies("63331023e6b62fc328b87bd9bc6dbfbe")
@@ -47,3 +47,5 @@ class MovieViewModel : ViewModel() {
     }
 
 }
+
+

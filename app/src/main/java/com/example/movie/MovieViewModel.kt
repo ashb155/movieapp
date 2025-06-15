@@ -13,6 +13,20 @@ class MovieViewModel : ViewModel() {
     var error by mutableStateOf<String?>(null)
         private set
 
+    var cast by mutableStateOf<List<Actor>>(emptyList())
+        private set
+
+    fun fetchMovieCredits(movieId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitInstance.api.getMovieCredits(movieId, "63331023e6b62fc328b87bd9bc6dbfbe")
+                cast = response.cast
+            } catch (e: Exception) {
+                // Optional: handle error
+            }
+        }
+    }
+
     init {
         fetchMovies()
     }
@@ -44,6 +58,10 @@ class MovieViewModel : ViewModel() {
                 error = "Search failed: ${e.message}"
             }
         }
+    }
+
+    fun getMovieById(id: Int): Movie? {
+        return movies.find { it.id == id }
     }
 
 }

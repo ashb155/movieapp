@@ -18,6 +18,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.background
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.ui.graphics.Color
 
 @Composable
@@ -80,6 +81,24 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                 modifier = Modifier.padding(vertical = 8.dp)
             )
         }
+
+        LaunchedEffect(Unit) {
+            viewModel.fetchGenres()
+        }
+
+        LazyRow (modifier=Modifier.padding(vertical=8.dp)){
+            items(viewModel.genres){genre->
+                FilterChip(
+                    selected=viewModel.selectedGenreId==genre.id,
+                    onClick = {
+                        viewModel.fetchMoviesByGenre(genre.id)
+                    },
+                    label={Text(genre.name)},
+                    modifier=Modifier.padding(horizontal=4.dp)
+                )
+            }
+        }
+
 
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(12.dp),

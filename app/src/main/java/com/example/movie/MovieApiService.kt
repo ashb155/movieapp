@@ -27,4 +27,15 @@ interface MovieApiService {
         @Path("movie_id") movieId: Int,
         @Query("api_key") apiKey: String
     ): Movie
+
+    @GET("genre/movie/list")
+    suspend fun getGenres(
+        @Query("api_key") apiKey: String
+    ): GenreResponse
+
+    @GET("discover/movie")
+    suspend fun getMoviesByGenre(
+        @Query("api_key") apiKey: String,
+        @Query("with_genres") genreId: Int
+    ): MovieResponse
 }

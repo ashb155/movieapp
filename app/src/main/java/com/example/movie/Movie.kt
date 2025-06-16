@@ -27,10 +27,13 @@ data class Actor(
     val character: String
 )
 
-data class MovieImagesResponse(
-    @SerializedName("backdrops") val backdrops: List<Backdrop>
+
+
+data class GenreResponse(
+    val genres:List<Genre>
+)
+data class Genre(
+    val id:Int,
+    val name:String
 )
 
-data class Backdrop(
-    @SerializedName("file_path") val filePath: String
-)

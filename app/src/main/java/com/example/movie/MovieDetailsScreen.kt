@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 
@@ -33,9 +34,7 @@ fun MovieDetailsScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Button(onClick = onBack) {
-            Text("Back", color = MaterialTheme.colorScheme.tertiary)
-        }
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -46,9 +45,12 @@ fun MovieDetailsScreen(
             movie != null -> {
                 Text(
                     text = movie!!.title,
+                    textAlign = TextAlign.Center,
+                    fontSize = 20.sp,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(bottom = 8.dp)
+                        .fillMaxWidth()
                 )
 
                 movie!!.backdropPath?.let {
@@ -113,8 +115,17 @@ fun MovieDetailsScreen(
                                     style = MaterialTheme.typography.bodySmall,
                                     textAlign = TextAlign.Center
                                 )
+
                             }
                         }
+                    }
+
+                    Spacer(modifier=Modifier.padding(6.dp))
+
+                    Button(onClick = onBack,
+                    modifier=Modifier.align(Alignment.CenterHorizontally)) {
+                        Text("Back", color = MaterialTheme.colorScheme.tertiary)
+
                     }
                 }
             }

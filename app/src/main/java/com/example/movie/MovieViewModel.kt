@@ -16,25 +16,15 @@ class MovieViewModel : ViewModel() {
     var cast by mutableStateOf<List<Actor>>(emptyList())
         private set
 
-    fun fetchMovieCredits(movieId: Int) {
+    var selectedMovie by mutableStateOf<Movie?>(null)
+        private set
+
+    private val apiKey = "63331023e6b62fc328b87bd9bc6dbfbe"
+
+    fun fetchMovies() {
         viewModelScope.launch {
             try {
-                val response = RetrofitInstance.api.getMovieCredits(movieId, "63331023e6b62fc328b87bd9bc6dbfbe")
-                cast = response.cast
-            } catch (e: Exception) {
-                // Optional: handle error
-            }
-        }
-    }
-
-    init {
-        fetchMovies()
-    }
-
-   fun fetchMovies() {
-        viewModelScope.launch {
-            try {
-                val response = RetrofitInstance.api.getLatestMovies("63331023e6b62fc328b87bd9bc6dbfbe")
+                val response = RetrofitInstance.api.getLatestMovies(apiKey)
                 movies = response.results
                 error = null
             } catch (e: Exception) {
@@ -46,12 +36,12 @@ class MovieViewModel : ViewModel() {
     fun searchMovies(query: String) {
         viewModelScope.launch {
             try {
-                if(query.isBlank()){
-                    val response = RetrofitInstance.api.searchMovies("63331023e6b62fc328b87bd9bc6dbfbe", query)
-                    movies = response.results ?: emptyList()}
-                else{
-                    val response = RetrofitInstance.api.searchMovies("63331023e6b62fc328b87bd9bc6dbfbe", query)
-                    movies = response.results ?: emptyList()
+                if (query.isBlank()) {
+                    val response = RetrofitInstance.api.getLatestMovies(apiKey)
+                    movies = response.results
+                } else {
+                    val response = RetrofitInstance.api.searchMovies(apiKey, query)
+                    movies = response.results
                 }
                 error = null
             } catch (e: Exception) {
@@ -60,10 +50,28 @@ class MovieViewModel : ViewModel() {
         }
     }
 
-    fun getMovieById(id: Int): Movie? {
-        return movies.find { it.id == id }
+    fun fetchMovieCredits(movieId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitInstance.api.getMovieCredits(movieId, apiKey)
+                cast = response.cast
+            } catch (e: Exception) {
+                cast = emptyList()
+                // Optionally set error or ignore
+            }
+        }
     }
 
+    fun fetchMovieDetails(movieId: Int) {
+        viewModelScope.launch {
+            try {
+                selectedMovie = RetrofitInstance.api.getMovieDetails(movieId, apiKey)
+                error = null
+                fetchMovieCredits(movieId)
+            } catch (e: Exception) {
+                selectedMovie = null
+                error = "Failed to load movie details: ${e.message}"
+            }
+        }
+    }
 }
-
-

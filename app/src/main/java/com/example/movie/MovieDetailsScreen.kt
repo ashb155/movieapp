@@ -130,10 +130,11 @@ fun MovieDetailsScreen(
                 }
             }
             else -> {
-                Text(
-                    text = "Loading movie details...",
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(8.dp),
+                    strokeWidth = 2.dp)
             }
         }
     }

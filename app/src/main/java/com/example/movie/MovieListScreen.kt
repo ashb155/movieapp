@@ -19,21 +19,24 @@ import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.lazy.rememberLazyListState
 
 @Composable
 fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int) -> Unit) {
     val movies = viewModel.movies
     val error = viewModel.error
     var searchQuery by remember { mutableStateOf("") }
+    val listState = rememberLazyListState()
 
-    // Debounce search
+    LaunchedEffect(viewModel.selectedGenreId) {
+        listState.animateScrollToItem(0)
+    }
     LaunchedEffect(searchQuery) {
         delay(500)
         viewModel.searchMovies(searchQuery)
     }
 
-    // Initial load - fetch movies only once
+
     LaunchedEffect(Unit) {
         viewModel.fetchMovies()
     }
@@ -86,18 +89,36 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
             viewModel.fetchGenres()
         }
 
-        LazyRow (modifier=Modifier.padding(vertical=8.dp)){
-            items(viewModel.genres){genre->
-                FilterChip(
-                    selected=viewModel.selectedGenreId==genre.id,
-                    onClick = {
-                        viewModel.fetchMoviesByGenre(genre.id)
-                    },
-                    label={Text(genre.name)},
-                    modifier=Modifier.padding(horizontal=4.dp)
-                )
+        if (viewModel.genres.isEmpty()) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(8.dp),
+                strokeWidth = 2.dp
+            )
+        } else {
+            LazyRow(modifier = Modifier.padding(vertical = 8.dp)) {
+                item {
+                    FilterChip(
+                        selected = viewModel.selectedGenreId == null,
+                        onClick = { viewModel.fetchMoviesByGenre(null) },
+                        label = { Text("All") },
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+                }
+
+                items(viewModel.genres) { genre ->
+                    FilterChip(
+                        selected = viewModel.selectedGenreId == genre.id,
+                        onClick = { viewModel.fetchMoviesByGenre(genre.id) },
+                        label = { Text(genre.name) },
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+                }
             }
         }
+
+
 
 
         LazyColumn(
@@ -163,3 +184,4 @@ fun MovieItem(movie: Movie, onClick: () -> Unit) {
         }
     }
 }
+

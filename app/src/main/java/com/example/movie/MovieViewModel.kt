@@ -4,7 +4,6 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
 
 class MovieViewModel : ViewModel() {
 
@@ -19,6 +18,7 @@ class MovieViewModel : ViewModel() {
 
     var selectedMovie by mutableStateOf<Movie?>(null)
         private set
+
     var genres by mutableStateOf<List<Genre>>(emptyList())
         private set
 
@@ -41,13 +41,12 @@ class MovieViewModel : ViewModel() {
     fun searchMovies(query: String) {
         viewModelScope.launch {
             try {
-                if (query.isBlank()) {
-                    val response = RetrofitInstance.api.getLatestMovies(apiKey)
-                    movies = response.results
+                val response = if (query.isBlank()) {
+                    RetrofitInstance.api.getLatestMovies(apiKey)
                 } else {
-                    val response = RetrofitInstance.api.searchMovies(apiKey, query)
-                    movies = response.results
+                    RetrofitInstance.api.searchMovies(apiKey, query)
                 }
+                movies = response.results
                 error = null
             } catch (e: Exception) {
                 error = "Search failed: ${e.message}"
@@ -62,7 +61,6 @@ class MovieViewModel : ViewModel() {
                 cast = response.cast
             } catch (e: Exception) {
                 cast = emptyList()
-                // Optionally set error or ignore
             }
         }
     }
@@ -83,24 +81,29 @@ class MovieViewModel : ViewModel() {
     fun fetchGenres() {
         viewModelScope.launch {
             try {
-                val response = RetrofitInstance.api.getGenres("63331023e6b62fc328b87bd9bc6dbfbe")
+                val response = RetrofitInstance.api.getGenres(apiKey)
                 genres = response.genres
+                error = null
             } catch (e: Exception) {
-                error = "Failed to load genres"
+                error = "Failed to load genres: ${e.message}"
             }
         }
     }
 
-    fun fetchMoviesByGenre(genreId:Int){
-        selectedGenreId=genreId
-        viewModelScope.launch{
-            try{
-                val response=RetrofitInstance.api.getMoviesByGenre("63331023e6b62fc328b87bd9bc6dbfbe",genreId)
-                movies=response.results
-                error=null
-            }
-            catch (e:Exception){
-                error="Failed to load genre movies : ${e.message}"
+    fun fetchMoviesByGenre(genreId: Int?) {
+        selectedGenreId = if (selectedGenreId == genreId) null else genreId
+
+        viewModelScope.launch {
+            try {
+                val response = if (selectedGenreId == null) {
+                    RetrofitInstance.api.getLatestMovies(apiKey)
+                } else {
+                    RetrofitInstance.api.getMoviesByGenre(apiKey, selectedGenreId!!)
+                }
+                movies = response.results
+                error = null
+            } catch (e: Exception) {
+                error = "Failed to fetch movies: ${e.message}"
             }
         }
     }

@@ -29,17 +29,20 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
     val listState = rememberLazyListState()
 
     LaunchedEffect(viewModel.selectedGenreIds) {
+        viewModel.fetchMoviesByGenres()
         listState.animateScrollToItem(0)
+
     }
     LaunchedEffect(searchQuery) {
         delay(500)
+        if(searchQuery.isBlank()){
+            viewModel.fetchMoviesByGenres()
+        }else{
         viewModel.searchMovies(searchQuery)
-    }
+    }}
 
 
-    LaunchedEffect(Unit) {
-        viewModel.fetchMovies()
-    }
+
 
     Column(
         modifier = Modifier
@@ -124,6 +127,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
 
 
         LazyColumn(
+            state=listState,
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.padding(vertical = 8.dp)
         ) {

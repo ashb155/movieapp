@@ -36,6 +36,6 @@ interface MovieApiService {
     @GET("discover/movie")
     suspend fun getMoviesByGenre(
         @Query("api_key") apiKey: String,
-        @Query("with_genres") genreId: Int
+        @Query("with_genres") genreIds:String
     ): MovieResponse
 }

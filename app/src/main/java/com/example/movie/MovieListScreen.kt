@@ -28,7 +28,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
     var searchQuery by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
-    LaunchedEffect(viewModel.selectedGenreId) {
+    LaunchedEffect(viewModel.selectedGenreIds) {
         listState.animateScrollToItem(0)
     }
     LaunchedEffect(searchQuery) {
@@ -100,8 +100,8 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
             LazyRow(modifier = Modifier.padding(vertical = 8.dp)) {
                 item {
                     FilterChip(
-                        selected = viewModel.selectedGenreId == null,
-                        onClick = { viewModel.fetchMoviesByGenre(null) },
+                        selected = viewModel.selectedGenreIds.isEmpty(),
+                        onClick = { viewModel.fetchMoviesByGenres() },
                         label = { Text("All") },
                         modifier = Modifier.padding(horizontal = 4.dp)
                     )
@@ -109,8 +109,10 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
 
                 items(viewModel.genres) { genre ->
                     FilterChip(
-                        selected = viewModel.selectedGenreId == genre.id,
-                        onClick = { viewModel.fetchMoviesByGenre(genre.id) },
+                        selected = viewModel.selectedGenreIds.contains(genre.id),
+                        onClick = {
+                            viewModel.toggleGenreSelection(genre.id)
+                            viewModel.fetchMoviesByGenres()},
                         label = { Text(genre.name) },
                         modifier = Modifier.padding(horizontal = 4.dp)
                     )

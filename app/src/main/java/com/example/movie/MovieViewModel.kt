@@ -22,7 +22,7 @@ class MovieViewModel : ViewModel() {
     var genres by mutableStateOf<List<Genre>>(emptyList())
         private set
 
-    var selectedGenreId by mutableStateOf<Int?>(null)
+    var selectedGenreIds by mutableStateOf<List<Int>>(emptyList())
 
     private val apiKey = "63331023e6b62fc328b87bd9bc6dbfbe"
 
@@ -90,21 +90,30 @@ class MovieViewModel : ViewModel() {
         }
     }
 
-    fun fetchMoviesByGenre(genreId: Int?) {
-        selectedGenreId = if (selectedGenreId == genreId) null else genreId
+    fun toggleGenreSelection(genreId:Int){
+        selectedGenreIds=if(selectedGenreIds.contains(genreId)){
+            selectedGenreIds-genreId
+        }else{
+            selectedGenreIds+genreId
+        }
+    }
 
+    fun fetchMoviesByGenres() {
         viewModelScope.launch {
             try {
-                val response = if (selectedGenreId == null) {
-                    RetrofitInstance.api.getLatestMovies(apiKey)
+                if (selectedGenreIds.isEmpty()) {
+                    val response = RetrofitInstance.api.getLatestMovies(apiKey)
+                    movies = response.results
                 } else {
-                    RetrofitInstance.api.getMoviesByGenre(apiKey, selectedGenreId!!)
+                    val genreIdsParam = selectedGenreIds.joinToString(separator = ",")
+                    val response = RetrofitInstance.api.getMoviesByGenre(apiKey, genreIdsParam)
+                    movies = response.results
                 }
-                movies = response.results
                 error = null
             } catch (e: Exception) {
                 error = "Failed to fetch movies: ${e.message}"
             }
         }
     }
+
 }

@@ -1,6 +1,8 @@
 package com.example.movie
 
+import YouTubeTrailerPlayer
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -8,6 +10,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -34,14 +38,13 @@ fun MovieDetailsScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-
-
         Spacer(modifier = Modifier.height(16.dp))
 
         when {
             error != null -> {
                 Text(text = error ?: "", color = MaterialTheme.colorScheme.error)
             }
+
             movie != null -> {
                 Text(
                     text = movie!!.title,
@@ -49,21 +52,52 @@ fun MovieDetailsScreen(
                     fontSize = 20.sp,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier
+                        .padding(bottom = 8.dp)
                         .fillMaxWidth()
                 )
 
-                movie!!.backdropPath?.let {
-                    val imageUrl = "https://image.tmdb.org/t/p/w780$it"
-                    Image(
-                        painter = rememberAsyncImagePainter(imageUrl),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(260.dp)
+                ) {
+                    movie!!.backdropPath?.let {
+                        val imageUrl = "https://image.tmdb.org/t/p/w780$it"
+                        Image(
+                            painter = rememberAsyncImagePainter(imageUrl),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.matchParentSize()
+                        )
+                    }
+
+                    Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(240.dp)
+                            .matchParentSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Black.copy(alpha = 0.75f),
+                                        Color.Transparent
+                                    )
+                                )
+                            )
                     )
+
+                    movie!!.videos?.results
+                        ?.firstOrNull { it.site == "YouTube" }?.key?.let { trailerKey ->
+                            YouTubeTrailerPlayer(
+                                trailerKey = trailerKey,
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .fillMaxWidth(0.9f)
+                                    .height(200.dp)
+                            )
+                        }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = "Rating: ${movie!!.voteAverage ?: "N/A"}",
@@ -115,26 +149,28 @@ fun MovieDetailsScreen(
                                     style = MaterialTheme.typography.bodySmall,
                                     textAlign = TextAlign.Center
                                 )
-
                             }
                         }
                     }
 
-                    Spacer(modifier=Modifier.padding(6.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                    Button(onClick = onBack,
-                    modifier=Modifier.align(Alignment.CenterHorizontally)) {
+                    Button(
+                        onClick = onBack,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    ) {
                         Text("Back", color = MaterialTheme.colorScheme.tertiary)
-
                     }
                 }
             }
+
             else -> {
                 CircularProgressIndicator(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(8.dp),
-                    strokeWidth = 2.dp)
+                    strokeWidth = 2.dp
+                )
             }
         }
     }

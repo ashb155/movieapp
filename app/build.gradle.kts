@@ -72,4 +72,8 @@ dependencies {
 
     implementation ("io.coil-kt:coil-compose:2.5.0")
     implementation ("com.google.accompanist:accompanist-navigation-animation:0.30.1")
+
+    implementation ("com.pierfrancescosoffritti.androidyoutubeplayer:core:11.1.0")
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
+
 }

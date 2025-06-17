@@ -13,9 +13,20 @@ data class Movie(
     @SerializedName("poster_path") val posterPath: String?,
     @SerializedName("backdrop_path") val backdropPath: String?,
     @SerializedName("release_date") val releaseDate: String?,
-    @SerializedName("vote_average") val voteAverage: Double?
+    @SerializedName("vote_average") val voteAverage: Double?,
+    val videos:VideosResponse?=null
 )
 
+data class VideosResponse(
+    val results:List<Video>
+)
+data class Video(
+    val id:String,
+    val key:String,
+    val name:String,
+    val site: String,
+    val type: String
+)
 data class CreditsResponse(
     val cast: List<Actor>
 )

@@ -25,8 +25,14 @@ interface MovieApiService {
     @GET("movie/{movie_id}")
     suspend fun getMovieDetails(
         @Path("movie_id") movieId: Int,
-        @Query("api_key") apiKey: String
+        @Query("api_key") apiKey: String,
+        @Query("append_to_response") appendToResponse: String = "videos"
     ): Movie
+    @GET("movie/{movie_id}/videos")
+    suspend fun getMovieVideos(
+        @Path("movie_id") movieId: Int,
+        @Query("api_key") apiKey: String
+    ): VideosResponse
 
     @GET("genre/movie/list")
     suspend fun getGenres(
@@ -36,6 +42,6 @@ interface MovieApiService {
     @GET("discover/movie")
     suspend fun getMoviesByGenre(
         @Query("api_key") apiKey: String,
-        @Query("with_genres") genreIds:String
+        @Query("with_genres") genreIds: String
     ): MovieResponse
 }

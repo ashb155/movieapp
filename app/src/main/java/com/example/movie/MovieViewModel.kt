@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import android.util.Log
 
 class MovieViewModel : ViewModel() {
 

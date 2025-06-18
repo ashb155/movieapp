@@ -4,9 +4,16 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import android.util.Log
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 class MovieViewModel : ViewModel() {
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
+
 
     var movies by mutableStateOf<List<Movie>>(emptyList())
         private set
@@ -114,6 +121,14 @@ class MovieViewModel : ViewModel() {
             } catch (e: Exception) {
                 error = "Failed to fetch movies: ${e.message}"
             }
+        }
+    }
+
+    fun refreshMovies(){
+        viewModelScope.launch{
+            _isRefreshing.value=true
+            fetchMoviesByGenres()
+            _isRefreshing.value=false
         }
     }
 

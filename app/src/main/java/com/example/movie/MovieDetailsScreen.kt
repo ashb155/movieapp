@@ -42,7 +42,43 @@ fun MovieDetailsScreen(
 
         when {
             error != null -> {
-                Text(text = error ?: "", color = MaterialTheme.colorScheme.error)
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha=0.2f))
+                                .padding(20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = "Something went wrong",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "Please check your connection or try again later.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
             }
 
             movie != null -> {
@@ -98,9 +134,16 @@ fun MovieDetailsScreen(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-
+                Card(modifier=Modifier.fillMaxWidth()){
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ){
                 Text(
-                    text = "Rating: ${movie!!.voteAverage ?: "N/A"}",
+                    text = "Rating: ${movie!!.
+                    voteAverage ?: "N/A"}",
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
@@ -109,12 +152,12 @@ fun MovieDetailsScreen(
                     text = "Release Date: ${movie!!.releaseDate ?: "N/A"}",
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(bottom = 4.dp)
-                )
+                )}}
 
                 Text(
                     text = "Overview:",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
                 )
 
                 Text(
@@ -125,7 +168,7 @@ fun MovieDetailsScreen(
 
                 if (cast.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Top Cast", style = MaterialTheme.typography.titleMedium)
+                    Text("Top Cast", style = MaterialTheme.typography.titleLarge)
                     LazyRow(modifier = Modifier.fillMaxWidth()) {
                         items(cast.take(10)) { actor ->
                             Column(

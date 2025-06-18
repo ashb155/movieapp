@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @Composable
 fun MovieDetailsScreen(
@@ -28,6 +30,7 @@ fun MovieDetailsScreen(
     val movie by remember { derivedStateOf { viewModel.selectedMovie } }
     val cast by remember { derivedStateOf { viewModel.cast } }
     val error by remember { derivedStateOf { viewModel.error } }
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(movieId) {
         viewModel.fetchMovieDetails(movieId)
@@ -36,6 +39,7 @@ fun MovieDetailsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(scrollState)
             .padding(16.dp)
     ) {
         Spacer(modifier = Modifier.height(16.dp))
@@ -155,16 +159,34 @@ fun MovieDetailsScreen(
                 )}}
 
                 Text(
-                    text = "Overview:",
+                    text = "Overview",
+                    textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 24.dp, bottom = 12.dp)
+                        .fillMaxWidth()
                 )
 
-                Text(
-                    text = movie!!.overview,
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Justify
-                )
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text(
+                        text = movie!!.overview,
+                        style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 16.sp),
+                        textAlign = TextAlign.Justify,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .padding(16.dp)
+                    )
+                }
+
 
                 if (cast.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(16.dp))
@@ -190,6 +212,7 @@ fun MovieDetailsScreen(
                                 Text(
                                     text = actor.name,
                                     style = MaterialTheme.typography.bodySmall,
+                                    fontSize = 10.sp,
                                     textAlign = TextAlign.Center
                                 )
                             }

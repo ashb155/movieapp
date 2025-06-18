@@ -76,5 +76,7 @@ dependencies {
     implementation ("com.pierfrancescosoffritti.androidyoutubeplayer:core:11.1.0")
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("com.google.accompanist:accompanist-swiperefresh:0.33.2-alpha")
+    implementation ("androidx.compose.material:material-icons-extended:<compose_version>")
+
 
 }

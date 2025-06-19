@@ -25,14 +25,17 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.lazy.grid.*
 
 @Composable
 fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int) -> Unit) {
     val movies = viewModel.movies
     val error = viewModel.error
     var searchQuery by remember { mutableStateOf("") }
-    val listState = rememberLazyListState()
+    val listState = rememberLazyGridState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+
 
     LaunchedEffect(viewModel.selectedGenreIds) {
         viewModel.fetchMoviesByGenres()
@@ -149,7 +152,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     strokeWidth = 2.dp
                 )
             } else {
-                LazyRow(modifier = Modifier.padding(vertical = 8.dp)) {
+                LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
                     item {
                         FilterChip(
                             selected = viewModel.selectedGenreIds.isEmpty(),
@@ -171,72 +174,97 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     }
                 }
             }
+            if (viewModel.selectedGenreIds.isNotEmpty()) {
+
+                Button(
+                    onClick = {
+                        viewModel.clearSelectedGenres()
+                        viewModel.fetchMoviesByGenres()
+                    },
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 2.dp)
+                        .size(width = 100.dp, height = 40.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                    )
+                ) {
+                    Text("Clear")
+                }
+            }}
 
             SwipeRefresh(
                 state = rememberSwipeRefreshState(isRefreshing),
                 onRefresh = { viewModel.refreshMovies() }
             ) {
-                LazyColumn(
-                    state = listState,
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(3),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(vertical=8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(8.dp)
                 ) {
                     items(movies) { movie ->
-                        MovieItem(movie = movie, onClick = { onMovieClick(movie.id) })
+                        val genreText = viewModel.getGenreText(movie)
+                        MovieItem(movie = movie, genreText = genreText, viewModel = viewModel, onClick = { onMovieClick(movie.id) })
                     }
                 }
             }
         }
     }
-}
+
 
 @Composable
-fun MovieItem(movie: Movie, onClick: () -> Unit) {
+fun MovieItem(movie: Movie, genreText: String, viewModel: MovieViewModel, onClick: () -> Unit) {
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
         modifier = Modifier
             .fillMaxWidth()
-            .clip(MaterialTheme.shapes.medium)
+            .aspectRatio(8f / 19f)
             .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(12.dp)
-        ) {
-            movie.posterPath?.let {
-                val imageUrl = "https://image.tmdb.org/t/p/w500$it"
-                Image(
-                    painter = rememberAsyncImagePainter(imageUrl),
-                    contentDescription = "${movie.title} poster",
-                    modifier = Modifier
-                        .size(width = 100.dp, height = 150.dp)
-                        .clip(MaterialTheme.shapes.small)
-                )
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.8f)
+        )
+    ) { Column{
+        val imageUrl = viewModel.getImageUrl(movie.posterPath)
+        imageUrl?.let {
+            Image(
+                painter = rememberAsyncImagePainter(it),
+                contentDescription = "${movie.title} poster",
                 modifier = Modifier
-                    .weight(1f)
-                    .align(Alignment.CenterVertically)
-            ) {
-                Text(
-                    text = movie.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = movie.overview,
-                    maxLines = 4,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 14.sp
-                )
-            }
+                    .fillMaxWidth()
+                    .aspectRatio(2f / 3f)
+            )
         }
+        Column(
+            modifier=Modifier
+                .fillMaxWidth()
+                .padding(6.dp)
+        ){
+            Text(
+                text=movie.title,
+                style=MaterialTheme.typography.bodyMedium,
+                maxLines=3,
+                overflow=TextOverflow.Ellipsis
+            )
+
+            Text(
+                text=movie.releaseDate?.take(4)?:"NA",
+                style=MaterialTheme.typography.bodySmall
+            )
+
+                if (genreText.isNotEmpty()) {
+                    Text(
+                        text = genreText,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+
+
     }
-}
+}}}

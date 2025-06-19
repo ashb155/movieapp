@@ -7,12 +7,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import retrofit2.http.Path
 
 class MovieViewModel : ViewModel() {
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
-
 
 
     var movies by mutableStateOf<List<Movie>>(emptyList())
@@ -98,11 +98,17 @@ class MovieViewModel : ViewModel() {
         }
     }
 
-    fun toggleGenreSelection(genreId:Int){
-        selectedGenreIds=if(selectedGenreIds.contains(genreId)){
-            selectedGenreIds-genreId
-        }else{
-            selectedGenreIds+genreId
+    fun getGenreText(movie: Movie): String {
+        return movie.genreIds.mapNotNull { id ->
+            genres.find { it.id == id }?.name
+        }.joinToString(", ")
+    }
+
+    fun toggleGenreSelection(genreId: Int) {
+        selectedGenreIds = if (selectedGenreIds.contains(genreId)) {
+            selectedGenreIds - genreId
+        } else {
+            selectedGenreIds + genreId
         }
     }
 
@@ -124,11 +130,11 @@ class MovieViewModel : ViewModel() {
         }
     }
 
-    fun refreshMovies(){
-        viewModelScope.launch{
-            _isRefreshing.value=true
+    fun refreshMovies() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
             fetchMoviesByGenres()
-            _isRefreshing.value=false
+            _isRefreshing.value = false
         }
     }
 
@@ -137,14 +143,29 @@ class MovieViewModel : ViewModel() {
             e.message?.contains("Unable to resolve host", ignoreCase = true) == true -> {
                 "No internet connection. Please check your network."
             }
+
             e.message?.contains("timeout", ignoreCase = true) == true -> {
                 "The request timed out. Please try again later."
             }
+
             e.message?.contains("404", ignoreCase = true) == true -> {
                 "Content not found."
             }
+
             else -> {
                 "We are facing technical issues. Please try again later."
             }
         }
-    }}
+    }
+    fun getImageUrl(posterPath: String?): String? {
+        return posterPath?.let { "https://image.tmdb.org/t/p/w500$it" }
+    }
+
+    fun getBackdropUrl(backdropPath: String?):String?{
+        return backdropPath?.let{"https://image.tmdb.org/t/p/w780$it"}
+    }
+
+    fun clearSelectedGenres() {
+        selectedGenreIds = emptyList()
+
+}}

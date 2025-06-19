@@ -182,7 +182,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     columns = GridCells.Fixed(3),
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(8.dp),
+                        .padding(vertical=8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     contentPadding = PaddingValues(8.dp)

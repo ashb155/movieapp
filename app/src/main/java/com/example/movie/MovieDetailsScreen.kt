@@ -33,7 +33,7 @@ fun MovieDetailsScreen(
     viewModel: MovieViewModel = viewModel(),
     onBack: () -> Unit
 ) {
-    val movie by remember { derivedStateOf { viewModel.selectedMovie } }
+    val movie = viewModel.selectedMovie
     val cast by remember { derivedStateOf { viewModel.cast } }
     val error by remember { derivedStateOf { viewModel.error } }
     val errorMessage=error
@@ -127,16 +127,16 @@ fun MovieDetailsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(260.dp)
-                    ) {
-                        movie!!.backdropPath?.let {
-                            val imageUrl = "https://image.tmdb.org/t/p/w780$it"
+                    ) { val imageUrl = viewModel.getBackdropUrl(movie.backdropPath)
+                        imageUrl?.let { url ->
                             Image(
-                                painter = rememberAsyncImagePainter(imageUrl),
+                                painter = rememberAsyncImagePainter(url),
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.matchParentSize()
                             )
                         }
+
 
                         Box(
                             modifier = Modifier
@@ -192,7 +192,7 @@ fun MovieDetailsScreen(
                             .fillMaxWidth()
                             .padding(bottom = 4.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.5f)
                         ),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                         shape = MaterialTheme.shapes.medium
@@ -203,7 +203,7 @@ fun MovieDetailsScreen(
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier
-                                .padding(top = 24.dp, bottom = 12.dp)
+                                .padding(top = 30.dp)
                                 .fillMaxWidth()
                         )
 
@@ -212,7 +212,7 @@ fun MovieDetailsScreen(
                             style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 16.sp),
                             textAlign = TextAlign.Justify,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(16.dp)
+                            modifier = Modifier.padding(20.dp)
                         )
                     }
 
@@ -223,7 +223,7 @@ fun MovieDetailsScreen(
                                 .fillMaxWidth()
                                 .padding(bottom = 4.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                             ),
                             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                             shape = MaterialTheme.shapes.medium

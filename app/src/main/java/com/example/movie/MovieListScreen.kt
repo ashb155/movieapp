@@ -25,6 +25,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.grid.*
 
 @Composable
@@ -173,6 +174,23 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     }
                 }
             }
+            if (viewModel.selectedGenreIds.isNotEmpty()) {
+
+                Button(
+                    onClick = {
+                        viewModel.clearSelectedGenres()
+                        viewModel.fetchMoviesByGenres()
+                    },
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .padding(bottom = 4.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                    )
+                ) {
+                    Text("Clear")
+                }
+            }}
 
             SwipeRefresh(
                 state = rememberSwipeRefreshState(isRefreshing),
@@ -189,33 +207,34 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                 ) {
                     items(movies) { movie ->
                         val genreText = viewModel.getGenreText(movie)
-                        MovieItem(movie = movie, genreText,onClick = { onMovieClick(movie.id) })
+                        MovieItem(movie = movie, genreText = genreText, viewModel = viewModel, onClick = { onMovieClick(movie.id) })
                     }
                 }
             }
         }
     }
-}
+
 
 @Composable
-fun MovieItem(movie: Movie, genreText:String,onClick: () -> Unit) {
+fun MovieItem(movie: Movie, genreText: String, viewModel: MovieViewModel, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(8f / 18f)
+            .aspectRatio(8f / 19f)
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.8f)
         )
     ) { Column{
-        movie.posterPath?.let {
-            val imageUrl = "https://image.tmdb.org/t/p/w500$it"
+        val imageUrl = viewModel.getImageUrl(movie.posterPath)
+        imageUrl?.let {
             Image(
-                painter = rememberAsyncImagePainter(imageUrl),
+                painter = rememberAsyncImagePainter(it),
                 contentDescription = "${movie.title} poster",
-                modifier = Modifier.fillMaxWidth()
-                    .aspectRatio(2f/3f)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(2f / 3f)
             )
         }
         Column(
@@ -226,6 +245,8 @@ fun MovieItem(movie: Movie, genreText:String,onClick: () -> Unit) {
             Text(
                 text=movie.title,
                 style=MaterialTheme.typography.bodyMedium,
+                maxLines=3,
+                overflow=TextOverflow.Ellipsis
             )
 
             Text(

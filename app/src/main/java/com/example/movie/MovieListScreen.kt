@@ -182,8 +182,9 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                         viewModel.fetchMoviesByGenres()
                     },
                     modifier = Modifier
-                        .align(Alignment.End)
-                        .padding(bottom = 4.dp),
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 2.dp)
+                        .size(width = 100.dp, height = 40.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
                     )

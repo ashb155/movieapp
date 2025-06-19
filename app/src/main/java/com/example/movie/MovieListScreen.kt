@@ -25,13 +25,14 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.background
+import androidx.compose.foundation.lazy.grid.*
 
 @Composable
 fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int) -> Unit) {
     val movies = viewModel.movies
     val error = viewModel.error
     var searchQuery by remember { mutableStateOf("") }
-    val listState = rememberLazyListState()
+    val listState = rememberLazyGridState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
 
     LaunchedEffect(viewModel.selectedGenreIds) {
@@ -176,10 +177,14 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                 state = rememberSwipeRefreshState(isRefreshing),
                 onRefresh = { viewModel.refreshMovies() }
             ) {
-                LazyColumn(
-                    state = listState,
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(3),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(8.dp)
                 ) {
                     items(movies) { movie ->
                         MovieItem(movie = movie, onClick = { onMovieClick(movie.id) })
@@ -193,50 +198,34 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
 @Composable
 fun MovieItem(movie: Movie, onClick: () -> Unit) {
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
         modifier = Modifier
             .fillMaxWidth()
-            .clip(MaterialTheme.shapes.medium)
+            .aspectRatio(2f / 3f)
             .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
-        Row(
-            modifier = Modifier
-                .padding(12.dp)
-        ) {
-            movie.posterPath?.let {
-                val imageUrl = "https://image.tmdb.org/t/p/w500$it"
-                Image(
-                    painter = rememberAsyncImagePainter(imageUrl),
-                    contentDescription = "${movie.title} poster",
-                    modifier = Modifier
-                        .size(width = 100.dp, height = 150.dp)
-                        .clip(MaterialTheme.shapes.small)
-                )
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .align(Alignment.CenterVertically)
-            ) {
-                Text(
-                    text = movie.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = movie.overview,
-                    maxLines = 4,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 14.sp
-                )
-            }
+        movie.posterPath?.let {
+            val imageUrl = "https://image.tmdb.org/t/p/w500$it"
+            Image(
+                painter = rememberAsyncImagePainter(imageUrl),
+                contentDescription = "${movie.title} poster",
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+        Column(
+            modifier=Modifier
+                .fillMaxWidth()
+                .padding(6.dp)
+        ){
+            Text(
+                text=movie.title,
+                style=MaterialTheme.typography.bodyMedium,
+                maxLines=1,
+                overflow=TextOverflow.Ellipsis
+            )
         }
     }
 }

@@ -36,6 +36,7 @@ fun MovieDetailsScreen(
     val movie by remember { derivedStateOf { viewModel.selectedMovie } }
     val cast by remember { derivedStateOf { viewModel.cast } }
     val error by remember { derivedStateOf { viewModel.error } }
+    val errorMessage=error
     val scrollState = rememberScrollState()
 
     LaunchedEffect(movieId) {
@@ -45,7 +46,7 @@ fun MovieDetailsScreen(
     Box(modifier = Modifier.fillMaxSize()
         ) {
 
-        if (error != null) {
+        if (errorMessage != null) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -82,7 +83,7 @@ fun MovieDetailsScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Please check your connection or try again later.",
+                            text = errorMessage,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
@@ -184,6 +185,7 @@ fun MovieDetailsScreen(
                             )
                         }
                     }
+                    Spacer(modifier=Modifier.height(10.dp))
 
                     Card(
                         modifier = Modifier
@@ -216,11 +218,23 @@ fun MovieDetailsScreen(
 
                     if (cast.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(16.dp))
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 4.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            shape = MaterialTheme.shapes.medium
+                        ){
                         Text(
                             "Top Cast",
                             style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .padding(top = 24.dp, bottom = 12.dp)
+                                .fillMaxWidth()
                         )
 
                         LazyRow(modifier = Modifier.fillMaxWidth()) {
@@ -262,7 +276,7 @@ fun MovieDetailsScreen(
                     )
                 }
             }
-        }
+        }}
 
         IconButton(
             onClick = onBack,

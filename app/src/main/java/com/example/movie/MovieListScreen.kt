@@ -54,6 +54,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         if (error != null) {
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -90,7 +91,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Please check your connection or try again later.",
+                            text = error,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center

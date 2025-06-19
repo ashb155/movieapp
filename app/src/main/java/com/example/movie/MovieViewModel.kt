@@ -41,7 +41,7 @@ class MovieViewModel : ViewModel() {
                 movies = response.results
                 error = null
             } catch (e: Exception) {
-                error = "Failed to load movies: ${e.message}"
+                error = ErrorMessage(e)
             }
         }
     }
@@ -57,7 +57,7 @@ class MovieViewModel : ViewModel() {
                 movies = response.results
                 error = null
             } catch (e: Exception) {
-                error = "Search failed: ${e.message}"
+                error = ErrorMessage(e)
             }
         }
     }
@@ -81,7 +81,7 @@ class MovieViewModel : ViewModel() {
                 fetchMovieCredits(movieId)
             } catch (e: Exception) {
                 selectedMovie = null
-                error = "Failed to load movie details: ${e.message}"
+                error = ErrorMessage(e)
             }
         }
     }
@@ -93,7 +93,7 @@ class MovieViewModel : ViewModel() {
                 genres = response.genres
                 error = null
             } catch (e: Exception) {
-                error = "Failed to load genres: ${e.message}"
+                error = ErrorMessage(e)
             }
         }
     }
@@ -119,7 +119,7 @@ class MovieViewModel : ViewModel() {
                 }
                 error = null
             } catch (e: Exception) {
-                error = "Failed to fetch movies: ${e.message}"
+                error = ErrorMessage(e)
             }
         }
     }
@@ -132,4 +132,19 @@ class MovieViewModel : ViewModel() {
         }
     }
 
-}
+    private fun ErrorMessage(e: Exception): String {
+        return when {
+            e.message?.contains("Unable to resolve host", ignoreCase = true) == true -> {
+                "No internet connection. Please check your network."
+            }
+            e.message?.contains("timeout", ignoreCase = true) == true -> {
+                "The request timed out. Please try again later."
+            }
+            e.message?.contains("404", ignoreCase = true) == true -> {
+                "Content not found."
+            }
+            else -> {
+                "We are facing technical issues. Please try again later."
+            }
+        }
+    }}

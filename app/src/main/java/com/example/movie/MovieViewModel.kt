@@ -98,6 +98,12 @@ class MovieViewModel : ViewModel() {
         }
     }
 
+    fun getGenreText(movie: Movie): String {
+        return movie.genreIds.mapNotNull { id ->
+            genres.find { it.id == id }?.name
+        }.joinToString(", ")
+    }
+
     fun toggleGenreSelection(genreId:Int){
         selectedGenreIds=if(selectedGenreIds.contains(genreId)){
             selectedGenreIds-genreId

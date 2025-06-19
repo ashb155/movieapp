@@ -35,6 +35,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
     val listState = rememberLazyGridState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
 
+
     LaunchedEffect(viewModel.selectedGenreIds) {
         viewModel.fetchMoviesByGenres()
         listState.animateScrollToItem(0)
@@ -150,7 +151,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     strokeWidth = 2.dp
                 )
             } else {
-                LazyRow(modifier = Modifier.padding(vertical = 8.dp)) {
+                LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
                     item {
                         FilterChip(
                             selected = viewModel.selectedGenreIds.isEmpty(),
@@ -187,7 +188,8 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     contentPadding = PaddingValues(8.dp)
                 ) {
                     items(movies) { movie ->
-                        MovieItem(movie = movie, onClick = { onMovieClick(movie.id) })
+                        val genreText = viewModel.getGenreText(movie)
+                        MovieItem(movie = movie, genreText,onClick = { onMovieClick(movie.id) })
                     }
                 }
             }
@@ -196,23 +198,24 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
 }
 
 @Composable
-fun MovieItem(movie: Movie, onClick: () -> Unit) {
+fun MovieItem(movie: Movie, genreText:String,onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(2f / 3f)
+            .aspectRatio(8f / 18f)
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
-    ) {
+    ) { Column{
         movie.posterPath?.let {
             val imageUrl = "https://image.tmdb.org/t/p/w500$it"
             Image(
                 painter = rememberAsyncImagePainter(imageUrl),
                 contentDescription = "${movie.title} poster",
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxWidth()
+                    .aspectRatio(2f/3f)
             )
         }
         Column(
@@ -223,9 +226,23 @@ fun MovieItem(movie: Movie, onClick: () -> Unit) {
             Text(
                 text=movie.title,
                 style=MaterialTheme.typography.bodyMedium,
-                maxLines=1,
-                overflow=TextOverflow.Ellipsis
             )
-        }
+
+            Text(
+                text=movie.releaseDate?.take(4)?:"NA",
+                style=MaterialTheme.typography.bodySmall
+            )
+
+                if (genreText.isNotEmpty()) {
+                    Text(
+                        text = genreText,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+
+
     }
-}
+}}}

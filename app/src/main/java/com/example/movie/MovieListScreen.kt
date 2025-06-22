@@ -207,8 +207,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     contentPadding = PaddingValues(8.dp)
                 ) {
                     items(movies) { movie ->
-                        val genreText = viewModel.getGenreText(movie)
-                        MovieItem(movie = movie, genreText = genreText, viewModel = viewModel, onClick = { onMovieClick(movie.id) })
+                        MovieItem(movie = movie, viewModel = viewModel, onClick = { onMovieClick(movie.id) })
                     }
                 }
             }
@@ -217,7 +216,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
 
 
 @Composable
-fun MovieItem(movie: Movie, genreText: String, viewModel: MovieViewModel, onClick: () -> Unit) {
+fun MovieItem(movie: Movie, viewModel: MovieViewModel, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -255,16 +254,10 @@ fun MovieItem(movie: Movie, genreText: String, viewModel: MovieViewModel, onClic
                 style=MaterialTheme.typography.bodySmall
             )
 
-                if (genreText.isNotEmpty()) {
-                    Text(
-                        text = genreText,
-                        style = MaterialTheme.typography.bodySmall,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+
                 }
 
 
 
     }
-}}}
+}}

@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 
 private val NetflixRed = Color(0xFFE50914)
 private val BackgroundBlack = Color(0xFF141414)
@@ -41,6 +42,7 @@ private val NetflixTypography = Typography(
     ),
     titleLarge = TextStyle(
         fontWeight = FontWeight.ExtraBold,
+        fontSize=20.sp
     ),
     bodyMedium = TextStyle(
         fontWeight = FontWeight.Normal,

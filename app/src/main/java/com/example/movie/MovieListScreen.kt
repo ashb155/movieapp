@@ -115,31 +115,16 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
             }
         } else {
             Image(
-                painter = painterResource(id = R.drawable.netflix),
+                painter = painterResource(id = R.drawable.flixist),
                 contentDescription = "App Logo",
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
-                    .height(40.dp)
-            )
-            Spacer(Modifier.padding(16.dp))
-
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                placeholder = { Text("Search movies...") },
-                modifier = Modifier
                     .fillMaxWidth()
-                    .clip(MaterialTheme.shapes.medium),
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    cursorColor = MaterialTheme.colorScheme.primary,
-                    focusedLabelColor = MaterialTheme.colorScheme.primary
-                )
+                    .height(130.dp)
             )
+            Spacer(Modifier.padding(2.dp))
+
+
             Spacer(modifier = Modifier.height(8.dp))
 
             LaunchedEffect(Unit) {
@@ -154,6 +139,23 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     strokeWidth = 2.dp
                 )
             } else {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Search movies...") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(MaterialTheme.shapes.medium),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MaterialTheme.colorScheme.primary,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary
+                    )
+                )
                 LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
                     item {
                         FilterChip(

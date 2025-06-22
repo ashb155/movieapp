@@ -1,12 +1,12 @@
 package com.example.movie
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.*
@@ -18,15 +18,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.google.accompanist.swiperefresh.*
 import kotlinx.coroutines.delay
-import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.lazy.items
 
 @Composable
 fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int) -> Unit) {
@@ -200,7 +198,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
             SwipeRefresh(
                 state = rememberSwipeRefreshState(isRefreshing),
                 onRefresh = { viewModel.refreshMovies() },
-                modifier=Modifier.weight(1f)
+                modifier = Modifier.weight(1f)
             ) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
@@ -213,7 +211,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     contentPadding = PaddingValues(8.dp)
                 ) {
-                    items(movies) { movie ->
+                    items(movies.take(18)) { movie ->
                         MovieItem(
                             movie = movie,
                             viewModel = viewModel,
@@ -225,7 +223,11 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (listState.firstVisibleItemIndex > 4) {
+            AnimatedVisibility(
+                visible = listState.firstVisibleItemIndex > 5,
+                enter = fadeIn(),
+                exit = fadeOut(animationSpec = tween(durationMillis = 600))
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -269,35 +271,36 @@ fun MovieItem(movie: Movie, viewModel: MovieViewModel, onClick: () -> Unit) {
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.8f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
         )
-    ) { Column{
-        val imageUrl = viewModel.getImageUrl(movie.posterPath)
-        imageUrl?.let {
-            Image(
-                painter = rememberAsyncImagePainter(it),
-                contentDescription = "${movie.title} poster",
+    ) {
+        Column {
+            val imageUrl = viewModel.getImageUrl(movie.posterPath)
+            imageUrl?.let {
+                Image(
+                    painter = rememberAsyncImagePainter(it),
+                    contentDescription = "${movie.title} poster",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(2f / 3f)
+                )
+            }
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(2f / 3f)
-            )
-        }
-        Column(
-            modifier=Modifier
-                .fillMaxWidth()
-                .padding(6.dp)
-        ){
-            Text(
-                text=movie.title,
-                style=MaterialTheme.typography.bodyMedium,
-                maxLines=3,
-                overflow=TextOverflow.Ellipsis
-            )
-
-            Text(
-                text=movie.releaseDate?.take(4)?:"NA",
-                style=MaterialTheme.typography.bodySmall
-            )
+                    .padding(6.dp)
+            ) {
+                Text(
+                    text = movie.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = movie.releaseDate?.take(4) ?: "NA",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
     }
-    }}
+}

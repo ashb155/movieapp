@@ -36,11 +36,11 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
     val listState = rememberLazyGridState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
 
-
     LaunchedEffect(viewModel.selectedGenreIds) {
         viewModel.fetchMoviesByGenres()
         listState.animateScrollToItem(0)
     }
+
     LaunchedEffect(searchQuery) {
         delay(500)
         if (searchQuery.isBlank()) {
@@ -50,6 +50,10 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
         }
     }
 
+    LaunchedEffect(viewModel.currentPage) {
+        listState.animateScrollToItem(0)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -57,7 +61,6 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         if (error != null) {
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -102,10 +105,11 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                         Spacer(modifier = Modifier.height(12.dp))
                         Button(
                             onClick = { viewModel.fetchMovies() },
-                        modifier=Modifier.fillMaxWidth(),
-                            colors=ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha=0.4f)
-                            )) {
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                            )
+                        ) {
                             Text("Try Again")
                         }
                     }
@@ -174,8 +178,8 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     }
                 }
             }
-            if (viewModel.selectedGenreIds.isNotEmpty()) {
 
+            if (viewModel.selectedGenreIds.isNotEmpty()) {
                 Button(
                     onClick = {
                         viewModel.clearSelectedGenres()
@@ -191,29 +195,70 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                 ) {
                     Text("Clear")
                 }
-            }}
+            }
 
             SwipeRefresh(
                 state = rememberSwipeRefreshState(isRefreshing),
-                onRefresh = { viewModel.refreshMovies() }
+                onRefresh = { viewModel.refreshMovies() },
+                modifier=Modifier.weight(1f)
             ) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
+                    state = listState,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(vertical=8.dp),
+                        .weight(1f)
+                        .padding(vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     contentPadding = PaddingValues(8.dp)
                 ) {
                     items(movies) { movie ->
-                        MovieItem(movie = movie, viewModel = viewModel, onClick = { onMovieClick(movie.id) })
+                        MovieItem(
+                            movie = movie,
+                            viewModel = viewModel,
+                            onClick = { onMovieClick(movie.id) }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (listState.firstVisibleItemIndex > 4) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(
+                        onClick = { viewModel.loadPreviousPage() },
+                        enabled = viewModel.currentPage > 1,
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                    ) {
+                        Text("Previous")
+                    }
+
+                    Text(
+                        text = "Page ${viewModel.currentPage} of ${viewModel.totalPages}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+
+                    Button(
+                        onClick = { viewModel.loadNextPage() },
+                        enabled = viewModel.currentPage < viewModel.totalPages,
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                    ) {
+                        Text("Next")
                     }
                 }
             }
         }
     }
-
+}
 
 @Composable
 fun MovieItem(movie: Movie, viewModel: MovieViewModel, onClick: () -> Unit) {
@@ -253,11 +298,6 @@ fun MovieItem(movie: Movie, viewModel: MovieViewModel, onClick: () -> Unit) {
                 text=movie.releaseDate?.take(4)?:"NA",
                 style=MaterialTheme.typography.bodySmall
             )
-
-
-                }
-
-
-
+        }
     }
-}}
+    }}

@@ -14,7 +14,6 @@ class MovieViewModel : ViewModel() {
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
 
-
     var movies by mutableStateOf<List<Movie>>(emptyList())
         private set
 
@@ -32,14 +31,46 @@ class MovieViewModel : ViewModel() {
 
     var selectedGenreIds by mutableStateOf<List<Int>>(emptyList())
 
+    var currentPage by mutableStateOf(1)
+        private set
+
+    var totalPages by mutableStateOf(1)
+        private set
+
+    var lastQuery by mutableStateOf("")
+        private set
+
     private val apiKey = "63331023e6b62fc328b87bd9bc6dbfbe"
 
-    fun fetchMovies() {
+    private enum class FetchMode { DEFAULT, GENRE, SEARCH }
+    private var lastMode = FetchMode.DEFAULT
+
+    // Master loading function
+    fun loadMovies(page: Int = 1, query: String = lastQuery) {
         viewModelScope.launch {
             try {
-                val response = RetrofitInstance.api.getLatestMovies(apiKey)
+                val response = when {
+                    query.isNotBlank() -> {
+                        lastMode = FetchMode.SEARCH
+                        lastQuery = query
+                        RetrofitInstance.api.searchMovies(apiKey, query, page)
+                    }
+                    selectedGenreIds.isNotEmpty() -> {
+                        lastMode = FetchMode.GENRE
+                        val genresParam = selectedGenreIds.joinToString(",")
+                        RetrofitInstance.api.getMoviesByGenre(apiKey, genresParam, page)
+                    }
+                    else -> {
+                        lastMode = FetchMode.DEFAULT
+                        RetrofitInstance.api.getLatestMovies(apiKey, page)
+                    }
+                }
+
+                currentPage = page
+                totalPages = response.total_pages
                 movies = response.results
                 error = null
+
             } catch (e: Exception) {
                 error = ErrorMessage(e)
             }
@@ -47,14 +78,47 @@ class MovieViewModel : ViewModel() {
     }
 
     fun searchMovies(query: String) {
+        currentPage = 1
+        loadMovies(1, query)
+    }
+
+    fun fetchMoviesByGenres() {
+        currentPage = 1
+        loadMovies(1)
+    }
+
+    fun fetchMovies() {
+        currentPage = 1
+        selectedGenreIds = emptyList()
+        lastQuery = ""
+        loadMovies()
+    }
+
+    fun loadNextPage() {
+        if (currentPage < totalPages) {
+            loadMovies(currentPage + 1)
+        }
+    }
+
+    fun loadPreviousPage() {
+        if (currentPage > 1) {
+            loadMovies(currentPage - 1)
+        }
+    }
+
+    fun refreshMovies() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            loadMovies(currentPage)
+            _isRefreshing.value = false
+        }
+    }
+
+    fun fetchGenres() {
         viewModelScope.launch {
             try {
-                val response = if (query.isBlank()) {
-                    RetrofitInstance.api.getLatestMovies(apiKey)
-                } else {
-                    RetrofitInstance.api.searchMovies(apiKey, query)
-                }
-                movies = response.results
+                val response = RetrofitInstance.api.getGenres(apiKey)
+                genres = response.genres
                 error = null
             } catch (e: Exception) {
                 error = ErrorMessage(e)
@@ -86,18 +150,6 @@ class MovieViewModel : ViewModel() {
         }
     }
 
-    fun fetchGenres() {
-        viewModelScope.launch {
-            try {
-                val response = RetrofitInstance.api.getGenres(apiKey)
-                genres = response.genres
-                error = null
-            } catch (e: Exception) {
-                error = ErrorMessage(e)
-            }
-        }
-    }
-
     fun getGenreText(movie: Movie): String {
         return movie.genreIds.mapNotNull { id ->
             genres.find { it.id == id }?.name
@@ -112,60 +164,24 @@ class MovieViewModel : ViewModel() {
         }
     }
 
-    fun fetchMoviesByGenres() {
-        viewModelScope.launch {
-            try {
-                if (selectedGenreIds.isEmpty()) {
-                    val response = RetrofitInstance.api.getLatestMovies(apiKey)
-                    movies = response.results
-                } else {
-                    val genreIdsParam = selectedGenreIds.joinToString(separator = ",")
-                    val response = RetrofitInstance.api.getMoviesByGenre(apiKey, genreIdsParam)
-                    movies = response.results
-                }
-                error = null
-            } catch (e: Exception) {
-                error = ErrorMessage(e)
-            }
-        }
+    fun clearSelectedGenres() {
+        selectedGenreIds = emptyList()
     }
 
-    fun refreshMovies() {
-        viewModelScope.launch {
-            _isRefreshing.value = true
-            fetchMoviesByGenres()
-            _isRefreshing.value = false
-        }
-    }
-
-    private fun ErrorMessage(e: Exception): String {
-        return when {
-            e.message?.contains("Unable to resolve host", ignoreCase = true) == true -> {
-                "No internet connection. Please check your network."
-            }
-
-            e.message?.contains("timeout", ignoreCase = true) == true -> {
-                "The request timed out. Please try again later."
-            }
-
-            e.message?.contains("404", ignoreCase = true) == true -> {
-                "Content not found."
-            }
-
-            else -> {
-                "We are facing technical issues. Please try again later."
-            }
-        }
-    }
     fun getImageUrl(posterPath: String?): String? {
         return posterPath?.let { "https://image.tmdb.org/t/p/w500$it" }
     }
 
-    fun getBackdropUrl(backdropPath: String?):String?{
-        return backdropPath?.let{"https://image.tmdb.org/t/p/w780$it"}
+    fun getBackdropUrl(backdropPath: String?): String? {
+        return backdropPath?.let { "https://image.tmdb.org/t/p/w780$it" }
     }
 
-    fun clearSelectedGenres() {
-        selectedGenreIds = emptyList()
-
-}}
+    private fun ErrorMessage(e: Exception): String {
+        return when {
+            e.message?.contains("Unable to resolve host", true) == true -> "No internet connection."
+            e.message?.contains("timeout", true) == true -> "Request timed out."
+            e.message?.contains("404", true) == true -> "Content not found."
+            else -> "Something went wrong."
+        }
+    }
+}

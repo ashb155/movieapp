@@ -45,34 +45,49 @@ class MovieViewModel : ViewModel() {
     private enum class FetchMode { DEFAULT, GENRE, SEARCH }
     private var lastMode = FetchMode.DEFAULT
 
-    fun loadMovies(page: Int = 1, query: String = "") {
+    fun loadMovies(page: Int = 1, query: String = "", genres: List<Int> = emptyList()) {
         viewModelScope.launch {
             try {
-                if (query.isNotBlank()) {
+                if (query.isNotBlank() && genres.isNotEmpty()) {
+                    val response = RetrofitInstance.api.searchMovies(apiKey, query, page)
+                    val filteredResults = response.results.filter { movie ->
+                        movie.genreIds.any { genres.contains(it) }
+                    }
+                    currentPage = page
+                    totalPages = response.total_pages
+                    movies = filteredResults
+                    error = null
                     lastMode = FetchMode.SEARCH
                     lastQuery = query
+                    selectedGenreIds = genres
+                } else if (query.isNotBlank()) {
                     val response = RetrofitInstance.api.searchMovies(apiKey, query, page)
                     currentPage = page
                     totalPages = response.total_pages
                     movies = response.results
                     error = null
-                } else if (selectedGenreIds.isNotEmpty()) {
-                    lastMode = FetchMode.GENRE
-                    lastQuery = ""
-                    val genresParam = selectedGenreIds.joinToString(",")
+                    lastMode = FetchMode.SEARCH
+                    lastQuery = query
+                    selectedGenreIds = emptyList()
+                } else if (genres.isNotEmpty()) {
+                    val genresParam = genres.joinToString(",")
                     val response = RetrofitInstance.api.getMoviesByGenre(apiKey, genresParam, page)
                     currentPage = page
                     totalPages = response.total_pages
                     movies = response.results
                     error = null
-                } else {
-                    lastMode = FetchMode.DEFAULT
+                    lastMode = FetchMode.GENRE
                     lastQuery = ""
+                    selectedGenreIds = genres
+                } else {
                     val response = RetrofitInstance.api.getLatestMovies(apiKey, page)
                     currentPage = page
                     totalPages = response.total_pages
                     movies = response.results
                     error = null
+                    lastMode = FetchMode.DEFAULT
+                    lastQuery = ""
+                    selectedGenreIds = emptyList()
                 }
             } catch (e: Exception) {
                 error = ErrorMessage(e)
@@ -83,13 +98,12 @@ class MovieViewModel : ViewModel() {
     fun searchMovies(query: String) {
         currentPage = 1
         lastQuery = query
-        loadMovies(1, query)
+        loadMovies(1, query, selectedGenreIds)
     }
 
     fun fetchMoviesByGenres() {
         currentPage = 1
-        lastQuery = ""
-        loadMovies(1, "")
+        loadMovies(1, lastQuery, selectedGenreIds)
     }
 
     fun fetchMovies() {
@@ -101,20 +115,20 @@ class MovieViewModel : ViewModel() {
 
     fun loadNextPage() {
         if (currentPage < totalPages) {
-            loadMovies(currentPage + 1, lastQuery)
+            loadMovies(currentPage + 1, lastQuery, selectedGenreIds)
         }
     }
 
     fun loadPreviousPage() {
         if (currentPage > 1) {
-            loadMovies(currentPage - 1, lastQuery)
+            loadMovies(currentPage - 1, lastQuery, selectedGenreIds)
         }
     }
 
     fun refreshMovies() {
         viewModelScope.launch {
             _isRefreshing.value = true
-            loadMovies(currentPage, lastQuery)
+            loadMovies(currentPage, lastQuery, selectedGenreIds)
             _isRefreshing.value = false
         }
     }
@@ -161,10 +175,14 @@ class MovieViewModel : ViewModel() {
         } else {
             selectedGenreIds + genreId
         }
+        currentPage = 1
+        loadMovies(1, lastQuery, selectedGenreIds)
     }
 
     fun clearSelectedGenres() {
         selectedGenreIds = emptyList()
+        currentPage = 1
+        loadMovies(1, lastQuery, selectedGenreIds)
     }
 
     fun getImageUrl(posterPath: String?): String? {

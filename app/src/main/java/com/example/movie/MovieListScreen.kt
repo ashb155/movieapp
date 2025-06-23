@@ -23,8 +23,11 @@ import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.swiperefresh.*
 import kotlinx.coroutines.delay
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.layout.ContentScale
 
 @Composable
 fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int) -> Unit) {
@@ -114,14 +117,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                 }
             }
         } else {
-            Image(
-                painter = painterResource(id = R.drawable.flixist),
-                contentDescription = "App Logo",
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .fillMaxWidth()
-                    .height(130.dp)
-            )
+            AnimatedFadeInLogo()
             Spacer(Modifier.padding(2.dp))
 
 
@@ -139,6 +135,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     strokeWidth = 2.dp
                 )
             } else {
+
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
@@ -201,7 +198,8 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                 state = rememberSwipeRefreshState(isRefreshing),
                 onRefresh = { viewModel.refreshMovies() },
                 modifier = Modifier.weight(1f)
-            ) {
+            ) { AnimatedVisibility(visible=viewModel.genres.isNotEmpty() && movies.isNotEmpty(),
+                enter=fadeIn(animationSpec=tween(durationMillis=600))) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
                     state = listState,
@@ -221,7 +219,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                         )
                     }
                 }
-            }
+            }}
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -305,4 +303,29 @@ fun MovieItem(movie: Movie, viewModel: MovieViewModel, onClick: () -> Unit) {
             }
         }
     }
+}
+
+@Composable
+fun AnimatedFadeInLogo() {
+    var visible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        delay(200)
+        visible = true
+    }
+
+    val alpha by animateFloatAsState(
+        targetValue = if (visible) 1f else 0f,
+        animationSpec = androidx.compose.animation.core.tween(durationMillis = 1200)
+    )
+
+    Image(
+        painter = painterResource(id = R.drawable.flixist),
+        contentDescription = "App Logo",
+        modifier = Modifier
+            .alpha(alpha)
+            .fillMaxWidth()
+            .height(130.dp),
+        contentScale = ContentScale.Fit
+    )
 }

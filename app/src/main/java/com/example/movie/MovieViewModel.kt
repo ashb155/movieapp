@@ -46,31 +46,35 @@ class MovieViewModel : ViewModel() {
     private var lastMode = FetchMode.DEFAULT
 
     // Master loading function
-    fun loadMovies(page: Int = 1, query: String = lastQuery) {
+    fun loadMovies(page: Int = 1, query: String = "") {
         viewModelScope.launch {
             try {
-                val response = when {
-                    query.isNotBlank() -> {
-                        lastMode = FetchMode.SEARCH
-                        lastQuery = query
-                        RetrofitInstance.api.searchMovies(apiKey, query, page)
-                    }
-                    selectedGenreIds.isNotEmpty() -> {
-                        lastMode = FetchMode.GENRE
-                        val genresParam = selectedGenreIds.joinToString(",")
-                        RetrofitInstance.api.getMoviesByGenre(apiKey, genresParam, page)
-                    }
-                    else -> {
-                        lastMode = FetchMode.DEFAULT
-                        RetrofitInstance.api.getLatestMovies(apiKey, page)
-                    }
+                if (query.isNotBlank()) {
+                    lastMode = FetchMode.SEARCH
+                    lastQuery = query
+                    val response = RetrofitInstance.api.searchMovies(apiKey, query, page)
+                    currentPage = page
+                    totalPages = response.total_pages
+                    movies = response.results
+                    error = null
+                } else if (selectedGenreIds.isNotEmpty()) {
+                    lastMode = FetchMode.GENRE
+                    lastQuery = ""
+                    val genresParam = selectedGenreIds.joinToString(",")
+                    val response = RetrofitInstance.api.getMoviesByGenre(apiKey, genresParam, page)
+                    currentPage = page
+                    totalPages = response.total_pages
+                    movies = response.results
+                    error = null
+                } else {
+                    lastMode = FetchMode.DEFAULT
+                    lastQuery = ""
+                    val response = RetrofitInstance.api.getLatestMovies(apiKey, page)
+                    currentPage = page
+                    totalPages = response.total_pages
+                    movies = response.results
+                    error = null
                 }
-
-                currentPage = page
-                totalPages = response.total_pages
-                movies = response.results
-                error = null
-
             } catch (e: Exception) {
                 error = ErrorMessage(e)
             }
@@ -79,12 +83,14 @@ class MovieViewModel : ViewModel() {
 
     fun searchMovies(query: String) {
         currentPage = 1
+        lastQuery = query
         loadMovies(1, query)
     }
 
     fun fetchMoviesByGenres() {
         currentPage = 1
-        loadMovies(1)
+        lastQuery = ""           // Clear lastQuery here!
+        loadMovies(1, "")        // Explicit empty query
     }
 
     fun fetchMovies() {
@@ -96,20 +102,20 @@ class MovieViewModel : ViewModel() {
 
     fun loadNextPage() {
         if (currentPage < totalPages) {
-            loadMovies(currentPage + 1)
+            loadMovies(currentPage + 1, lastQuery)
         }
     }
 
     fun loadPreviousPage() {
         if (currentPage > 1) {
-            loadMovies(currentPage - 1)
+            loadMovies(currentPage - 1, lastQuery)
         }
     }
 
     fun refreshMovies() {
         viewModelScope.launch {
             _isRefreshing.value = true
-            loadMovies(currentPage)
+            loadMovies(currentPage, lastQuery)
             _isRefreshing.value = false
         }
     }

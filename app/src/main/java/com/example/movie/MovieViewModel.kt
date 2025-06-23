@@ -95,14 +95,14 @@ class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel()
         return backdropPath?.let { "https://image.tmdb.org/t/p/w780$it" }
     }
 
-    private fun ErrorMessage(e: Exception): String {
+    fun ErrorMessage(e: Exception): String {
         return when {
             e.message?.contains("Unable to resolve host", true) == true -> "No internet connection."
             e.message?.contains("timeout", true) == true -> "Request timed out."
             e.message?.contains("404", true) == true -> "Content not found."
             else -> "Something went wrong."
         }
-    }
+    }}}}}
 
 
-}
+

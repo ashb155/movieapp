@@ -63,11 +63,7 @@ class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel()
 
     fun fetchMovieCredits(movieId: Int) {
         viewModelScope.launch {
-            try {
-                val response = RetrofitInstance.api.getMovieCredits(movieId, apiKey)
-                cast = response.cast
-            } catch (e: Exception) {
-                cast = emptyList()
+            movieRepository.fetchMovieCredits(movieId)
             }
         }
     }
@@ -102,7 +98,16 @@ class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel()
             e.message?.contains("404", true) == true -> "Content not found."
             else -> "Something went wrong."
         }
-    }}}}}
+    }
+
+    fun fetchMovieDetails(movieId: Int) {
+        viewModelScope.launch{movieRepository.fetchMovieDetails(movieId)}
+    }
+        fun fetchGenres() {
+            viewModelScope.launch{movieRepository.fetchGenres()}
+        }
+    }}}
+
 
 
 

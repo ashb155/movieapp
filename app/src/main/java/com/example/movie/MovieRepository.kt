@@ -8,10 +8,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class MovieRepository(private val apiService: MovieApiService, ) { 
-    
+class MovieRepository(private val apiService: MovieApiService, ) {
+
     private val apiKey = "63331023e6b62fc328b87bd9bc6dbfbe"
-    val ret= RetrofitInstance.api
+    val ret = RetrofitInstance.api
 
     suspend fun getLatestMovies() = apiService.getLatestMovies(apiKey)
 
@@ -37,18 +37,18 @@ class MovieRepository(private val apiService: MovieApiService, ) {
 //        private set
 
     var movies = MutableStateFlow<List<Movie>>(emptyList())
-     //   private set
+    //   private set
 
     var selectedGenreIds = MutableStateFlow<List<Int>>(emptyList())
 
     var error = MutableStateFlow<String?>(null)
-      //  private set
+    //  private set
 
     var genres = MutableStateFlow<List<Genre>>(emptyList())
-        //private set
+    //private set
 
     var selectedMovie = MutableStateFlow<Movie?>(null)
-        //private set
+    //private set
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
@@ -67,55 +67,56 @@ class MovieRepository(private val apiService: MovieApiService, ) {
     }
 
     private enum class FetchMode { DEFAULT, GENRE, SEARCH }
+
     private var lastMode = FetchMode.DEFAULT
 
     suspend fun loadMovies(page: Int = 1, query: String = "", genres: List<Int> = emptyList()) {
-            try {
-                if (query.isNotBlank() && genres.isNotEmpty()) {
-                    val response = ret.searchMovies(apiKey, query, page)
-                    val filteredResults = response.results.filter { movie ->
-                        movie.genreIds.any { genres.contains(it) }
-                    }
-                    currentPage.value = page
-                    totalPages.value= response.total_pages
-                    movies.value = filteredResults
-                    error.value = null
-                    lastMode = FetchMode.SEARCH
-                    lastQuery.value = query
-                    selectedGenreIds.value = genres
-                } else if (query.isNotBlank()) {
-                    val response = ret.searchMovies(apiKey, query, page)
-                    currentPage.value = page
-                    totalPages.value = response.total_pages
-                    movies.value = response.results
-                    error.value = null
-                    lastMode = FetchMode.SEARCH
-                    lastQuery.value = query
-                    selectedGenreIds.value= emptyList()
-                } else if (genres.isNotEmpty()) {
-                    val genresParam = genres.joinToString(",")
-                    val response = ret.getMoviesByGenre(apiKey, genresParam, page)
-                    currentPage.value = page
-                    totalPages.value = response.total_pages
-                    movies.value = response.results
-                    error.value = null
-                    lastMode = FetchMode.GENRE
-                    lastQuery.value = ""
-                    selectedGenreIds.value = genres
-                } else {
-                    val response = ret.getLatestMovies(apiKey, page)
-                    currentPage.value = page
-                    totalPages.value = response.total_pages
-                    movies.value = response.results
-                    error.value = null
-                    lastMode = FetchMode.DEFAULT
-                    lastQuery.value = ""
-                    selectedGenreIds.value = emptyList()
+        try {
+            if (query.isNotBlank() && genres.isNotEmpty()) {
+                val response = ret.searchMovies(apiKey, query, page)
+                val filteredResults = response.results.filter { movie ->
+                    movie.genreIds.any { genres.contains(it) }
                 }
-            } catch (e: Exception) {
-                error.value = ErrorMessage(e)
+                currentPage.value = page
+                totalPages.value = response.total_pages
+                movies.value = filteredResults
+                error.value = null
+                lastMode = FetchMode.SEARCH
+                lastQuery.value = query
+                selectedGenreIds.value = genres
+            } else if (query.isNotBlank()) {
+                val response = ret.searchMovies(apiKey, query, page)
+                currentPage.value = page
+                totalPages.value = response.total_pages
+                movies.value = response.results
+                error.value = null
+                lastMode = FetchMode.SEARCH
+                lastQuery.value = query
+                selectedGenreIds.value = emptyList()
+            } else if (genres.isNotEmpty()) {
+                val genresParam = genres.joinToString(",")
+                val response = ret.getMoviesByGenre(apiKey, genresParam, page)
+                currentPage.value = page
+                totalPages.value = response.total_pages
+                movies.value = response.results
+                error.value = null
+                lastMode = FetchMode.GENRE
+                lastQuery.value = ""
+                selectedGenreIds.value = genres
+            } else {
+                val response = ret.getLatestMovies(apiKey, page)
+                currentPage.value = page
+                totalPages.value = response.total_pages
+                movies.value = response.results
+                error.value = null
+                lastMode = FetchMode.DEFAULT
+                lastQuery.value = ""
+                selectedGenreIds.value = emptyList()
             }
-        
+        } catch (e: Exception) {
+            error.value = ErrorMessage(e)
+        }
+
     }
 
     suspend fun searchMovies(query: String) {
@@ -134,48 +135,38 @@ class MovieRepository(private val apiService: MovieApiService, ) {
     }
 
     suspend fun loadNextPage() {
-        this.currentPage=currentPage
-        this.lastQuery=lastQuery
-        this.selectedGenreIds=selectedGenreIds
-        if (currentPage.value< totalPages.value) {
-            loadMovies(currentPage.value + 1, lastQuery.value, selectedGenreIds.value)}
+        this.currentPage = currentPage
+        this.lastQuery = lastQuery
+        this.selectedGenreIds = selectedGenreIds
+        if (currentPage.value < totalPages.value) {
+            loadMovies(currentPage.value + 1, lastQuery.value, selectedGenreIds.value)
         }
+    }
 
     suspend fun loadPreviousPage() {
-        this.currentPage=currentPage
-        this.lastQuery=lastQuery
-        this.selectedGenreIds=selectedGenreIds
+        this.currentPage = currentPage
+        this.lastQuery = lastQuery
+        this.selectedGenreIds = selectedGenreIds
         if (currentPage.value > 1) {
-          loadMovies(currentPage.value - 1, lastQuery.value, selectedGenreIds.value)}
+            loadMovies(currentPage.value - 1, lastQuery.value, selectedGenreIds.value)
         }
+    }
 
     suspend fun refreshMovies() {
-            _isRefreshing.value = true
-            loadMovies(currentPage.value, lastQuery.value, selectedGenreIds.value)
-            _isRefreshing.value = false
+        _isRefreshing.value = true
+        loadMovies(currentPage.value, lastQuery.value, selectedGenreIds.value)
+        _isRefreshing.value = false
+    }
+
+    suspend fun fetchMovieCredits(movieId: Int) {
+        try {
+            val response = RetrofitInstance.api.getMovieCredits(movieId, apiKey)
+            cast = response.cast
+        } catch (e: Exception) {
+            cast = emptyList()
         }
+    }
 
-    fun fetchMovieCredits(movieId: Int) {
-            try {
-                val response = RetrofitInstance.api.getMovieCredits(movieId, apiKey)
-                cast= response.cast
-            } catch (e: Exception) {
-                cast = emptyList()
-            }
-        }
-
-
-
-    suspend fun fetchMovieDetails(movieId: Int) {
-            try {
-                selectedMovie.value = RetrofitInstance.api.getMovieDetails(movieId, apiKey)
-                error.value = null
-                fetchMovieCredits(movieId)
-            } catch (e: Exception) {
-                selectedMovie.value = null
-                error.value = ErrorMessage(e)
-            }
-        }
 
     suspend fun toggleGenreSelection(genreId: Int) {
         selectedGenreIds.value = if (selectedGenreIds.value.contains(genreId)) {
@@ -184,45 +175,37 @@ class MovieRepository(private val apiService: MovieApiService, ) {
             selectedGenreIds.value + genreId
         }
         currentPage.value = 1
-        loadMovies(currentPage.value, lastQuery.value, selectedGenreIds.value)}
+        loadMovies(currentPage.value, lastQuery.value, selectedGenreIds.value)
+    }
 
     suspend fun clearSelectedGenres() {
         selectedGenreIds.value = emptyList()
         currentPage.value = 1
-        loadMovies(1, lastQuery.value, selectedGenreIds.value)}
+        loadMovies(1, lastQuery.value, selectedGenreIds.value)
+    }
+
+    suspend fun fetchGenres() {
+        try {
+            val response = RetrofitInstance.api.getGenres(apiKey)
+            genres.value = response.genres
+            error.value = null
+        } catch (e: Exception) {
+            error.value = ErrorMessage(e)
+        }
     }
 
 
+    suspend fun fetchMovieDetails(movieId: Int) {
+        try {
+            selectedMovie.value = RetrofitInstance.api.getMovieDetails(movieId, apiKey)
+            error.value = null
+            fetchMovieCredits(movieId)
+        } catch (e: Exception) {
+            selectedMovie.value = null
+            error.value = ErrorMessage(e)
+        }
+    }
+
 }
-
-
-
-
-
-//    }
-
-
-    /*   suspend fun fetchGenres() {
-               try {
-                   val response = ret.getGenres(apiKey)
-                   genres.value= response.genres
-                   kotlin.error = null
-               } catch (e: Exception) {
-                   kotlin.error = ErrorMessage(e)
-               }
-           }
-       }
-
-   suspend fun fetchMovieDetails(movieId: Int) {
-       viewModelScope.launch {
-           try {
-               selectedMovie = ret.getMovieDetails(movieId, apiKey)
-               error = null
-               fetchMovieCredits(movieId)
-           } catch (e: Exception) {
-               selectedMovie = null
-               error = ErrorMessage(e)
-           }
-       }*/
 
 

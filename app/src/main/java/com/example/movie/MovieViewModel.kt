@@ -46,16 +46,13 @@ class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel()
     }
 
     fun loadPreviousPage() {
-
             viewModelScope.launch{movieRepository.loadPreviousPage()
 
     }
 
     fun refreshMovies() {
         viewModelScope.launch {
-            _isRefreshing.value = true
-            viewModelScope.launch{movieRepository.loadMovies(currentPage, lastQuery, selectedGenreIds)}
-            _isRefreshing.value = false
+            movieRepository.refreshMovies()
         }
     }
 

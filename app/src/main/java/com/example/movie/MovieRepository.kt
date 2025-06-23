@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class MovieRepository(private val apiService: MovieApiService, ) { 
@@ -44,6 +45,9 @@ class MovieRepository(private val apiService: MovieApiService, ) {
 
     var genres = MutableStateFlow<List<Genre>>(emptyList())
         //private set
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing
 
 
     private fun ErrorMessage(e: Exception): String {
@@ -138,7 +142,14 @@ class MovieRepository(private val apiService: MovieApiService, ) {
           loadMovies(currentPage.value - 1, lastQuery.value, selectedGenreIds.value)}
         }
 
+    suspend fun refreshMovies() {
+            _isRefreshing.value = true
+            loadMovies(currentPage.value, lastQuery.value, selectedGenreIds.value)
+            _isRefreshing.value = false
+        }
     }
+
+
 
 //    }
 

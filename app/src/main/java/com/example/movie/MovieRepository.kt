@@ -118,6 +118,10 @@ class MovieRepository(private val apiService: MovieApiService, ) {
         loadMovies(currentPage.value, lastQuery.value, selectedGenreIds.value)
     }
 
+    suspend fun fetchMovies() {
+        loadMovies()
+    }
+
 
     /*   suspend fun fetchGenres() {
                try {

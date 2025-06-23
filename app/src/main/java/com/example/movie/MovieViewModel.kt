@@ -34,13 +34,10 @@ class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel()
     }
 
     fun fetchMoviesByGenres() {
-/*        currentPage = 1*/
+
         viewModelScope.launch{movieRepository.fetchMoviesByGenres()}
 
     fun fetchMovies() {
-        currentPage = 1
-        selectedGenreIds = emptyList()
-        lastQuery = ""
         viewModelScope.launch{movieRepository.loadMovies()}
     }
 

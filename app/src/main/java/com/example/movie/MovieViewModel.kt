@@ -42,9 +42,7 @@ class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel()
     }
 
     fun loadNextPage() {
-        if (currentPage < totalPages) {
-            viewModelScope.launch{movieRepository.loadMovies(currentPage + 1, lastQuery, selectedGenreIds)}
-        }
+            viewModelScope.launch{movieRepository.loadNextPage()}
     }
 
     fun loadPreviousPage() {

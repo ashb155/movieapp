@@ -122,6 +122,18 @@ class MovieRepository(private val apiService: MovieApiService, ) {
         loadMovies()
     }
 
+    suspend fun loadNextPage() {
+        this.currentPage=currentPage
+        this.lastQuery=lastQuery
+        this.selectedGenreIds=selectedGenreIds
+        if (currentPage.value< totalPages.value) {
+            loadMovies(currentPage.value + 1, lastQuery.value, selectedGenreIds.value)}
+        }
+
+    }
+
+//    }
+
 
     /*   suspend fun fetchGenres() {
                try {

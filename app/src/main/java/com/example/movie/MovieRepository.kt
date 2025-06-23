@@ -107,27 +107,34 @@ class MovieRepository(private val apiService: MovieApiService, ) {
         
     }
 
- /*   suspend fun fetchGenres() {
-            try {
-                val response = RetrofitInstance.api.getGenres(apiKey)
-                genres.value= response.genres
-                kotlin.error = null
-            } catch (e: Exception) {
-                kotlin.error = ErrorMessage(e)
-            }
-        }
+    suspend fun searchMovies(query: String,currentPage:Int) {
+        this.currentPage.value = currentPage
+        this.lastQuery.value = query
+        loadMovies(1, query, selectedGenreIds.value)
     }
 
-suspend fun fetchMovieDetails(movieId: Int) {
-    viewModelScope.launch {
-        try {
-            selectedMovie = RetrofitInstance.api.getMovieDetails(movieId, apiKey)
-            error = null
-            fetchMovieCredits(movieId)
-        } catch (e: Exception) {
-            selectedMovie = null
-            error = ErrorMessage(e)
-        }
-    }*/
+
+    /*   suspend fun fetchGenres() {
+               try {
+                   val response = RetrofitInstance.api.getGenres(apiKey)
+                   genres.value= response.genres
+                   kotlin.error = null
+               } catch (e: Exception) {
+                   kotlin.error = ErrorMessage(e)
+               }
+           }
+       }
+
+   suspend fun fetchMovieDetails(movieId: Int) {
+       viewModelScope.launch {
+           try {
+               selectedMovie = RetrofitInstance.api.getMovieDetails(movieId, apiKey)
+               error = null
+               fetchMovieCredits(movieId)
+           } catch (e: Exception) {
+               selectedMovie = null
+               error = ErrorMessage(e)
+           }
+       }*/
 }
 

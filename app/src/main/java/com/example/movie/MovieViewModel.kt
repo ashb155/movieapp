@@ -45,60 +45,11 @@ class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel()
     private enum class FetchMode { DEFAULT, GENRE, SEARCH }
     private var lastMode = FetchMode.DEFAULT
 
- /*   fun loadMovies(page: Int = 1, query: String = "", genres: List<Int> = emptyList()) {
-        viewModelScope.launch {
-            try {
-                if (query.isNotBlank() && genres.isNotEmpty()) {
-                    val response = RetrofitInstance.api.searchMovies(apiKey, query, page)
-                    val filteredResults = response.results.filter { movie ->
-                        movie.genreIds.any { genres.contains(it) }
-                    }
-                    currentPage = page
-                    totalPages = response.total_pages
-                    movies = filteredResults
-                    error = null
-                    lastMode = FetchMode.SEARCH
-                    lastQuery = query
-                    selectedGenreIds = genres
-                } else if (query.isNotBlank()) {
-                    val response = RetrofitInstance.api.searchMovies(apiKey, query, page)
-                    currentPage = page
-                    totalPages = response.total_pages
-                    movies = response.results
-                    error = null
-                    lastMode = FetchMode.SEARCH
-                    lastQuery = query
-                    selectedGenreIds = emptyList()
-                } else if (genres.isNotEmpty()) {
-                    val genresParam = genres.joinToString(",")
-                    val response = RetrofitInstance.api.getMoviesByGenre(apiKey, genresParam, page)
-                    currentPage = page
-                    totalPages = response.total_pages
-                    movies = response.results
-                    error = null
-                    lastMode = FetchMode.GENRE
-                    lastQuery = ""
-                    selectedGenreIds = genres
-                } else {
-                    val response = RetrofitInstance.api.getLatestMovies(apiKey, page)
-                    currentPage = page
-                    totalPages = response.total_pages
-                    movies = response.results
-                    error = null
-                    lastMode = FetchMode.DEFAULT
-                    lastQuery = ""
-                    selectedGenreIds = emptyList()
-                }
-            } catch (e: Exception) {
-                error = ErrorMessage(e)
-            }
-        }
-    }*/
-
     fun searchMovies(query: String) {
-        currentPage = 1
-        lastQuery = query
-        viewModelScope.launch{movieRepository.loadMovies(1, query, selectedGenreIds)}
+//        currentPage = 1
+//        lastQuery = query
+//        viewModelScope.launch{movieRepository.loadMovies(1, query, selectedGenreIds)}
+        viewModelScope.launch{ movieRepository.searchMovies(query, 1) }
     }
 
     fun fetchMoviesByGenres() {

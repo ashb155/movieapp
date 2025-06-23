@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
@@ -216,8 +215,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                         MovieItem(
                             movie = movie,
                             viewModel = viewModel,
-                            onClick = { onMovieClick(movie.id) }
-                        )
+                            onClick = { onMovieClick(movie.id) } )
                     }
                 }
             }}

@@ -45,7 +45,6 @@ class MovieViewModel : ViewModel() {
     private enum class FetchMode { DEFAULT, GENRE, SEARCH }
     private var lastMode = FetchMode.DEFAULT
 
-    // Master loading function
     fun loadMovies(page: Int = 1, query: String = "") {
         viewModelScope.launch {
             try {
@@ -89,8 +88,8 @@ class MovieViewModel : ViewModel() {
 
     fun fetchMoviesByGenres() {
         currentPage = 1
-        lastQuery = ""           // Clear lastQuery here!
-        loadMovies(1, "")        // Explicit empty query
+        lastQuery = ""
+        loadMovies(1, "")
     }
 
     fun fetchMovies() {
@@ -154,12 +153,6 @@ class MovieViewModel : ViewModel() {
                 error = ErrorMessage(e)
             }
         }
-    }
-
-    fun getGenreText(movie: Movie): String {
-        return movie.genreIds.mapNotNull { id ->
-            genres.find { it.id == id }?.name
-        }.joinToString(", ")
     }
 
     fun toggleGenreSelection(genreId: Int) {

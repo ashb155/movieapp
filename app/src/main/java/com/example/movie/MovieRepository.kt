@@ -13,7 +13,7 @@ class MovieRepository(private val apiService: MovieApiService, ) {
 
     suspend fun getLatestMovies() = apiService.getLatestMovies(apiKey)
 
-    suspend fun searchMovies(query: String) = apiService.searchMovies(apiKey, query)
+//    suspend fun searchMovies(query: String) = apiService.searchMovies(apiKey, query)
 
     suspend fun getMovieCredits(movieId: Int) = apiService.getMovieCredits(movieId, apiKey)
 
@@ -107,10 +107,15 @@ class MovieRepository(private val apiService: MovieApiService, ) {
         
     }
 
-    suspend fun searchMovies(query: String,currentPage:Int) {
-        this.currentPage.value = currentPage
+    suspend fun searchMovies(query: String) {
+        currentPage.value = 1
         this.lastQuery.value = query
-        loadMovies(1, query, selectedGenreIds.value)
+        loadMovies(currentPage.value, query, selectedGenreIds.value)
+    }
+
+    suspend fun fetchMoviesByGenres() {
+        currentPage.value = 1
+        loadMovies(currentPage.value, lastQuery.value, selectedGenreIds.value)
     }
 
 

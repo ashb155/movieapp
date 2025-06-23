@@ -14,11 +14,6 @@ class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel()
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
 
-   /* var movies by mutableStateOf<List<Movie>>(emptyList())
-        private set*/
-
-    /*var error by mutableStateOf<String?>(null)
-        private set*/
 
     var cast by mutableStateOf<List<Actor>>(emptyList())
         private set
@@ -29,33 +24,18 @@ class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel()
     var genres by mutableStateOf<List<Genre>>(emptyList())
         private set
 
-    /*var selectedGenreIds by mutableStateOf<List<Int>>(emptyList())*/
-
-    /*var currentPage by mutableStateOf(1)
-        private set*/
-
-    /*var totalPages by mutableStateOf(1)
-        private set*/
-
-//    var lastQuery by mutableStateOf("")
-//        private set
-
     private val apiKey = "63331023e6b62fc328b87bd9bc6dbfbe"
 
     private enum class FetchMode { DEFAULT, GENRE, SEARCH }
     private var lastMode = FetchMode.DEFAULT
 
     fun searchMovies(query: String) {
-//        currentPage = 1
-//        lastQuery = query
-//        viewModelScope.launch{movieRepository.loadMovies(1, query, selectedGenreIds)}
-        viewModelScope.launch{ movieRepository.searchMovies(query, 1) }
+        viewModelScope.launch{ movieRepository.searchMovies(query) }
     }
 
     fun fetchMoviesByGenres() {
-        currentPage = 1
-        viewModelScope.launch{movieRepository.loadMovies(1, lastQuery, selectedGenreIds)}
-    }
+/*        currentPage = 1*/
+        viewModelScope.launch{movieRepository.fetchMoviesByGenres()}
 
     fun fetchMovies() {
         currentPage = 1

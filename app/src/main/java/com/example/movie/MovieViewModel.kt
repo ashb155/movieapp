@@ -9,16 +9,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import retrofit2.http.Path
 
-class MovieViewModel : ViewModel() {
+class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel() {
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
 
-    var movies by mutableStateOf<List<Movie>>(emptyList())
-        private set
+   /* var movies by mutableStateOf<List<Movie>>(emptyList())
+        private set*/
 
-    var error by mutableStateOf<String?>(null)
-        private set
+    /*var error by mutableStateOf<String?>(null)
+        private set*/
 
     var cast by mutableStateOf<List<Actor>>(emptyList())
         private set
@@ -29,23 +29,23 @@ class MovieViewModel : ViewModel() {
     var genres by mutableStateOf<List<Genre>>(emptyList())
         private set
 
-    var selectedGenreIds by mutableStateOf<List<Int>>(emptyList())
+    /*var selectedGenreIds by mutableStateOf<List<Int>>(emptyList())*/
 
-    var currentPage by mutableStateOf(1)
-        private set
+    /*var currentPage by mutableStateOf(1)
+        private set*/
 
-    var totalPages by mutableStateOf(1)
-        private set
+    /*var totalPages by mutableStateOf(1)
+        private set*/
 
-    var lastQuery by mutableStateOf("")
-        private set
+//    var lastQuery by mutableStateOf("")
+//        private set
 
     private val apiKey = "63331023e6b62fc328b87bd9bc6dbfbe"
 
     private enum class FetchMode { DEFAULT, GENRE, SEARCH }
     private var lastMode = FetchMode.DEFAULT
 
-    fun loadMovies(page: Int = 1, query: String = "", genres: List<Int> = emptyList()) {
+ /*   fun loadMovies(page: Int = 1, query: String = "", genres: List<Int> = emptyList()) {
         viewModelScope.launch {
             try {
                 if (query.isNotBlank() && genres.isNotEmpty()) {
@@ -93,42 +93,42 @@ class MovieViewModel : ViewModel() {
                 error = ErrorMessage(e)
             }
         }
-    }
+    }*/
 
     fun searchMovies(query: String) {
         currentPage = 1
         lastQuery = query
-        loadMovies(1, query, selectedGenreIds)
+        viewModelScope.launch{movieRepository.loadMovies(1, query, selectedGenreIds)}
     }
 
     fun fetchMoviesByGenres() {
         currentPage = 1
-        loadMovies(1, lastQuery, selectedGenreIds)
+        viewModelScope.launch{movieRepository.loadMovies(1, lastQuery, selectedGenreIds)}
     }
 
     fun fetchMovies() {
         currentPage = 1
         selectedGenreIds = emptyList()
         lastQuery = ""
-        loadMovies()
+        viewModelScope.launch{movieRepository.loadMovies()}
     }
 
     fun loadNextPage() {
         if (currentPage < totalPages) {
-            loadMovies(currentPage + 1, lastQuery, selectedGenreIds)
+            viewModelScope.launch{movieRepository.loadMovies(currentPage + 1, lastQuery, selectedGenreIds)}
         }
     }
 
     fun loadPreviousPage() {
         if (currentPage > 1) {
-            loadMovies(currentPage - 1, lastQuery, selectedGenreIds)
+            viewModelScope.launch{movieRepository.loadMovies(currentPage - 1, lastQuery, selectedGenreIds)}
         }
     }
 
     fun refreshMovies() {
         viewModelScope.launch {
             _isRefreshing.value = true
-            loadMovies(currentPage, lastQuery, selectedGenreIds)
+            viewModelScope.launch{movieRepository.loadMovies(currentPage, lastQuery, selectedGenreIds)}
             _isRefreshing.value = false
         }
     }
@@ -176,13 +176,13 @@ class MovieViewModel : ViewModel() {
             selectedGenreIds + genreId
         }
         currentPage = 1
-        loadMovies(1, lastQuery, selectedGenreIds)
+        viewModelScope.launch{movieRepository.loadMovies(1, lastQuery, selectedGenreIds)}
     }
 
     fun clearSelectedGenres() {
         selectedGenreIds = emptyList()
         currentPage = 1
-        loadMovies(1, lastQuery, selectedGenreIds)
+        viewModelScope.launch{movieRepository.loadMovies(1, lastQuery, selectedGenreIds)}
     }
 
     fun getImageUrl(posterPath: String?): String? {

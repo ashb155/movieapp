@@ -57,14 +57,7 @@ class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel()
     }
 
     fun fetchGenres() {
-        viewModelScope.launch {
-            try {
-                val response = RetrofitInstance.api.getGenres(apiKey)
-                genres = response.genres
-                error = null
-            } catch (e: Exception) {
-                error = ErrorMessage(e)
-            }
+        viewModelScope.launch {movieRepository.fetchMovies()
         }
     }
 
@@ -81,31 +74,17 @@ class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel()
 
     fun fetchMovieDetails(movieId: Int) {
         viewModelScope.launch {
-            try {
-                selectedMovie = RetrofitInstance.api.getMovieDetails(movieId, apiKey)
-                error = null
-                fetchMovieCredits(movieId)
-            } catch (e: Exception) {
-                selectedMovie = null
-                error = ErrorMessage(e)
-            }
+           movieRepository.fetchMovieDetails(movieId)
         }
     }
 
     fun toggleGenreSelection(genreId: Int) {
-        selectedGenreIds = if (selectedGenreIds.contains(genreId)) {
-            selectedGenreIds - genreId
-        } else {
-            selectedGenreIds + genreId
-        }
-        currentPage = 1
-        viewModelScope.launch{movieRepository.loadMovies(1, lastQuery, selectedGenreIds)}
+
+        viewModelScope.launch{movieRepository.toggleGenreSelection(genreId)}
     }
 
     fun clearSelectedGenres() {
-        selectedGenreIds = emptyList()
-        currentPage = 1
-        viewModelScope.launch{movieRepository.loadMovies(1, lastQuery, selectedGenreIds)}
+        viewModelScope.launch{movieRepository.clearSelectedGenres()
     }
 
     fun getImageUrl(posterPath: String?): String? {
@@ -124,4 +103,6 @@ class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel()
             else -> "Something went wrong."
         }
     }
+
+
 }

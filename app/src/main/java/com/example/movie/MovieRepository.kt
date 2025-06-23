@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 class MovieRepository(private val apiService: MovieApiService, ) { 
     
     private val apiKey = "63331023e6b62fc328b87bd9bc6dbfbe"
+    val ret= RetrofitInstance.api
 
     suspend fun getLatestMovies() = apiService.getLatestMovies(apiKey)
 
@@ -46,8 +47,14 @@ class MovieRepository(private val apiService: MovieApiService, ) {
     var genres = MutableStateFlow<List<Genre>>(emptyList())
         //private set
 
+    var selectedMovie = MutableStateFlow<Movie?>(null)
+        //private set
+
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
+    var cast by mutableStateOf<List<Actor>>(emptyList())
+        private set
 
 
     private fun ErrorMessage(e: Exception): String {
@@ -65,7 +72,7 @@ class MovieRepository(private val apiService: MovieApiService, ) {
     suspend fun loadMovies(page: Int = 1, query: String = "", genres: List<Int> = emptyList()) {
             try {
                 if (query.isNotBlank() && genres.isNotEmpty()) {
-                    val response = RetrofitInstance.api.searchMovies(apiKey, query, page)
+                    val response = ret.searchMovies(apiKey, query, page)
                     val filteredResults = response.results.filter { movie ->
                         movie.genreIds.any { genres.contains(it) }
                     }
@@ -77,7 +84,7 @@ class MovieRepository(private val apiService: MovieApiService, ) {
                     lastQuery.value = query
                     selectedGenreIds.value = genres
                 } else if (query.isNotBlank()) {
-                    val response = RetrofitInstance.api.searchMovies(apiKey, query, page)
+                    val response = ret.searchMovies(apiKey, query, page)
                     currentPage.value = page
                     totalPages.value = response.total_pages
                     movies.value = response.results
@@ -87,7 +94,7 @@ class MovieRepository(private val apiService: MovieApiService, ) {
                     selectedGenreIds.value= emptyList()
                 } else if (genres.isNotEmpty()) {
                     val genresParam = genres.joinToString(",")
-                    val response = RetrofitInstance.api.getMoviesByGenre(apiKey, genresParam, page)
+                    val response = ret.getMoviesByGenre(apiKey, genresParam, page)
                     currentPage.value = page
                     totalPages.value = response.total_pages
                     movies.value = response.results
@@ -96,7 +103,7 @@ class MovieRepository(private val apiService: MovieApiService, ) {
                     lastQuery.value = ""
                     selectedGenreIds.value = genres
                 } else {
-                    val response = RetrofitInstance.api.getLatestMovies(apiKey, page)
+                    val response = ret.getLatestMovies(apiKey, page)
                     currentPage.value = page
                     totalPages.value = response.total_pages
                     movies.value = response.results
@@ -147,7 +154,48 @@ class MovieRepository(private val apiService: MovieApiService, ) {
             loadMovies(currentPage.value, lastQuery.value, selectedGenreIds.value)
             _isRefreshing.value = false
         }
+
+    fun fetchMovieCredits(movieId: Int) {
+            try {
+                val response = RetrofitInstance.api.getMovieCredits(movieId, apiKey)
+                cast= response.cast
+            } catch (e: Exception) {
+                cast = emptyList()
+            }
+        }
+
+
+
+    suspend fun fetchMovieDetails(movieId: Int) {
+            try {
+                selectedMovie.value = RetrofitInstance.api.getMovieDetails(movieId, apiKey)
+                error.value = null
+                fetchMovieCredits(movieId)
+            } catch (e: Exception) {
+                selectedMovie.value = null
+                error.value = ErrorMessage(e)
+            }
+        }
+
+    suspend fun toggleGenreSelection(genreId: Int) {
+        selectedGenreIds.value = if (selectedGenreIds.value.contains(genreId)) {
+            selectedGenreIds.value - genreId
+        } else {
+            selectedGenreIds.value + genreId
+        }
+        currentPage.value = 1
+        loadMovies(currentPage.value, lastQuery.value, selectedGenreIds.value)}
+
+    suspend fun clearSelectedGenres() {
+        selectedGenreIds.value = emptyList()
+        currentPage.value = 1
+        loadMovies(1, lastQuery.value, selectedGenreIds.value)}
     }
+
+
+}
+
+
 
 
 
@@ -156,7 +204,7 @@ class MovieRepository(private val apiService: MovieApiService, ) {
 
     /*   suspend fun fetchGenres() {
                try {
-                   val response = RetrofitInstance.api.getGenres(apiKey)
+                   val response = ret.getGenres(apiKey)
                    genres.value= response.genres
                    kotlin.error = null
                } catch (e: Exception) {
@@ -168,7 +216,7 @@ class MovieRepository(private val apiService: MovieApiService, ) {
    suspend fun fetchMovieDetails(movieId: Int) {
        viewModelScope.launch {
            try {
-               selectedMovie = RetrofitInstance.api.getMovieDetails(movieId, apiKey)
+               selectedMovie = ret.getMovieDetails(movieId, apiKey)
                error = null
                fetchMovieCredits(movieId)
            } catch (e: Exception) {
@@ -176,5 +224,5 @@ class MovieRepository(private val apiService: MovieApiService, ) {
                error = ErrorMessage(e)
            }
        }*/
-}
+
 

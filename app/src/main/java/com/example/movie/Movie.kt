@@ -3,7 +3,10 @@ package com.example.movie
 import com.google.gson.annotations.SerializedName
 
 data class MovieResponse(
-    val results: List<Movie>
+    val page: Int,
+    val results: List<Movie>,
+    @SerializedName("total_pages") val total_pages: Int,
+    @SerializedName("total_results") val totalResults: Int
 )
 
 data class Movie(

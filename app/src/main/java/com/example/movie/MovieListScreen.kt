@@ -1,12 +1,11 @@
 package com.example.movie
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.*
@@ -18,29 +17,31 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.google.accompanist.swiperefresh.*
 import kotlinx.coroutines.delay
-import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.layout.ContentScale
 
 @Composable
 fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int) -> Unit) {
     val movies = viewModel.movies
     val error = viewModel.error
-    var searchQuery by remember { mutableStateOf("") }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
     val listState = rememberLazyGridState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
-
 
     LaunchedEffect(viewModel.selectedGenreIds) {
         viewModel.fetchMoviesByGenres()
         listState.animateScrollToItem(0)
     }
+
     LaunchedEffect(searchQuery) {
         delay(500)
         if (searchQuery.isBlank()) {
@@ -50,6 +51,10 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
         }
     }
 
+    LaunchedEffect(viewModel.currentPage) {
+        listState.animateScrollToItem(0)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -57,7 +62,6 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         if (error != null) {
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -102,42 +106,21 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                         Spacer(modifier = Modifier.height(12.dp))
                         Button(
                             onClick = { viewModel.fetchMovies() },
-                        modifier=Modifier.fillMaxWidth(),
-                            colors=ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha=0.4f)
-                            )) {
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                            )
+                        ) {
                             Text("Try Again")
                         }
                     }
                 }
             }
         } else {
-            Image(
-                painter = painterResource(id = R.drawable.netflix),
-                contentDescription = "App Logo",
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .height(40.dp)
-            )
-            Spacer(Modifier.padding(16.dp))
+            AnimatedFadeInLogo()
+            Spacer(Modifier.padding(2.dp))
 
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                placeholder = { Text("Search movies...") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(MaterialTheme.shapes.medium),
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    cursorColor = MaterialTheme.colorScheme.primary,
-                    focusedLabelColor = MaterialTheme.colorScheme.primary
-                )
-            )
+
             Spacer(modifier = Modifier.height(8.dp))
 
             LaunchedEffect(Unit) {
@@ -152,6 +135,24 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     strokeWidth = 2.dp
                 )
             } else {
+
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Search movies...") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(MaterialTheme.shapes.medium),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MaterialTheme.colorScheme.primary,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary
+                    )
+                )
                 LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
                     item {
                         FilterChip(
@@ -174,8 +175,8 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     }
                 }
             }
-            if (viewModel.selectedGenreIds.isNotEmpty()) {
 
+            if (viewModel.selectedGenreIds.isNotEmpty()) {
                 Button(
                     onClick = {
                         viewModel.clearSelectedGenres()
@@ -191,33 +192,77 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                 ) {
                     Text("Clear")
                 }
-            }}
+            }
 
             SwipeRefresh(
                 state = rememberSwipeRefreshState(isRefreshing),
-                onRefresh = { viewModel.refreshMovies() }
-            ) {
+                onRefresh = { viewModel.refreshMovies() },
+                modifier = Modifier.weight(1f)
+            ) { AnimatedVisibility(visible=viewModel.genres.isNotEmpty() && movies.isNotEmpty(),
+                enter=fadeIn(animationSpec=tween(durationMillis=600))) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
+                    state = listState,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(vertical=8.dp),
+                        .weight(1f)
+                        .padding(vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     contentPadding = PaddingValues(8.dp)
                 ) {
-                    items(movies) { movie ->
-                        val genreText = viewModel.getGenreText(movie)
-                        MovieItem(movie = movie, genreText = genreText, viewModel = viewModel, onClick = { onMovieClick(movie.id) })
+                    items(movies.take(18)) { movie ->
+                        MovieItem(
+                            movie = movie,
+                            viewModel = viewModel,
+                            onClick = { onMovieClick(movie.id) } )
+                    }
+                }
+            }}
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            AnimatedVisibility(
+                visible = listState.firstVisibleItemIndex > 5,
+                enter = fadeIn(),
+                exit = fadeOut(animationSpec = tween(durationMillis = 600))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(
+                        onClick = { viewModel.loadPreviousPage() },
+                        enabled = viewModel.currentPage > 1,
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                    ) {
+                        Text("Previous")
+                    }
+
+                    Text(
+                        text = "Page ${viewModel.currentPage} of ${viewModel.totalPages}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+
+                    Button(
+                        onClick = { viewModel.loadNextPage() },
+                        enabled = viewModel.currentPage < viewModel.totalPages,
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                    ) {
+                        Text("Next")
                     }
                 }
             }
         }
     }
-
+}
 
 @Composable
-fun MovieItem(movie: Movie, genreText: String, viewModel: MovieViewModel, onClick: () -> Unit) {
+fun MovieItem(movie: Movie, viewModel: MovieViewModel, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -225,46 +270,61 @@ fun MovieItem(movie: Movie, genreText: String, viewModel: MovieViewModel, onClic
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.8f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
         )
-    ) { Column{
-        val imageUrl = viewModel.getImageUrl(movie.posterPath)
-        imageUrl?.let {
-            Image(
-                painter = rememberAsyncImagePainter(it),
-                contentDescription = "${movie.title} poster",
+    ) {
+        Column {
+            val imageUrl = viewModel.getImageUrl(movie.posterPath)
+            imageUrl?.let {
+                Image(
+                    painter = rememberAsyncImagePainter(it),
+                    contentDescription = "${movie.title} poster",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(2f / 3f)
+                )
+            }
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(2f / 3f)
-            )
+                    .padding(6.dp)
+            ) {
+                Text(
+                    text = movie.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = movie.releaseDate?.take(4) ?: "NA",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
-        Column(
-            modifier=Modifier
-                .fillMaxWidth()
-                .padding(6.dp)
-        ){
-            Text(
-                text=movie.title,
-                style=MaterialTheme.typography.bodyMedium,
-                maxLines=3,
-                overflow=TextOverflow.Ellipsis
-            )
-
-            Text(
-                text=movie.releaseDate?.take(4)?:"NA",
-                style=MaterialTheme.typography.bodySmall
-            )
-
-                if (genreText.isNotEmpty()) {
-                    Text(
-                        text = genreText,
-                        style = MaterialTheme.typography.bodySmall,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
-
-
     }
-}}}
+}
+
+@Composable
+fun AnimatedFadeInLogo() {
+    var visible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        delay(200)
+        visible = true
+    }
+
+    val alpha by animateFloatAsState(
+        targetValue = if (visible) 1f else 0f,
+        animationSpec = androidx.compose.animation.core.tween(durationMillis = 1200)
+    )
+
+    Image(
+        painter = painterResource(id = R.drawable.flixist),
+        contentDescription = "App Logo",
+        modifier = Modifier
+            .alpha(alpha)
+            .fillMaxWidth()
+            .height(130.dp),
+        contentScale = ContentScale.Fit
+    )
+}

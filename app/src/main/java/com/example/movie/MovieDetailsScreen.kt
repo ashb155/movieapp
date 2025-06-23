@@ -232,6 +232,7 @@ fun MovieDetailsScreen(
                             "Top Cast",
                             style = MaterialTheme.typography.titleLarge,
                             textAlign = TextAlign.Center,
+                            color=MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier
                                 .padding(top = 24.dp, bottom = 12.dp)
                                 .fillMaxWidth()

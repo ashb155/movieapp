@@ -31,11 +31,16 @@ import androidx.compose.ui.layout.ContentScale
 
 @Composable
 fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int) -> Unit) {
-    val movies = viewModel.movies
-    val error = viewModel.error
-    var searchQuery by rememberSaveable { mutableStateOf("") }
+    val movies by viewModel.movies.collectAsState()
+    val error by viewModel.error.collectAsState()
+    val repoSearchQuery by viewModel.lastQuery.collectAsState()
+    var searchQuery by rememberSaveable { mutableStateOf(repoSearchQuery) }
     val listState = rememberLazyGridState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val genres by viewModel.genres.collectAsState()
+    val selectedGenreIds by viewModel.selectedGenreIds.collectAsState()
+    val currentPage by viewModel.currentPage.collectAsState()
+    val totalPages by viewModel.totalPages.collectAsState()
 
     LaunchedEffect(viewModel.selectedGenreIds) {
         viewModel.fetchMoviesByGenres()
@@ -44,14 +49,16 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
 
     LaunchedEffect(searchQuery) {
         delay(500)
-        if (searchQuery.isBlank()) {
-            viewModel.fetchMoviesByGenres()
-        } else {
-            viewModel.searchMovies(searchQuery)
+        if (searchQuery != repoSearchQuery) {
+            if (searchQuery.isBlank()) {
+                viewModel.fetchMovies()
+            } else {
+                viewModel.searchMovies(searchQuery)
+            }
         }
     }
 
-    LaunchedEffect(viewModel.currentPage) {
+    LaunchedEffect(currentPage) {
         listState.animateScrollToItem(0)
     }
 
@@ -97,8 +104,9 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        error?.let{
                         Text(
-                            text = error,
+                            text = it,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
@@ -116,7 +124,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     }
                 }
             }
-        } else {
+        } }else {
             AnimatedFadeInLogo()
             Spacer(Modifier.padding(2.dp))
 
@@ -127,7 +135,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                 viewModel.fetchGenres()
             }
 
-            if (viewModel.genres.isEmpty()) {
+            if (genres.isEmpty()) {
                 CircularProgressIndicator(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
@@ -156,18 +164,17 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                 LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
                     item {
                         FilterChip(
-                            selected = viewModel.selectedGenreIds.isEmpty(),
+                            selected = selectedGenreIds.isEmpty(),
                             onClick = { viewModel.fetchMoviesByGenres() },
                             label = { Text("All") },
                             modifier = Modifier.padding(horizontal = 4.dp)
                         )
                     }
-                    items(viewModel.genres) { genre ->
+                    items(genres) { genre ->
                         FilterChip(
-                            selected = viewModel.selectedGenreIds.contains(genre.id),
+                            selected = selectedGenreIds.contains(genre.id),
                             onClick = {
                                 viewModel.toggleGenreSelection(genre.id)
-                                viewModel.fetchMoviesByGenres()
                             },
                             label = { Text(genre.name) },
                             modifier = Modifier.padding(horizontal = 4.dp)
@@ -176,11 +183,10 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                 }
             }
 
-            if (viewModel.selectedGenreIds.isNotEmpty()) {
+            if (selectedGenreIds.isNotEmpty()) {
                 Button(
                     onClick = {
                         viewModel.clearSelectedGenres()
-                        viewModel.fetchMoviesByGenres()
                     },
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
@@ -193,12 +199,28 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     Text("Clear")
                 }
             }
+            if (selectedGenreIds.isNotEmpty() && movies.isEmpty()){
+                Box(
+                    modifier=Modifier
+                        .fillMaxSize()
+                        .padding(2.dp),
+                    contentAlignment = Alignment.Center
+                ){
+
+                    Text(
+                        text = "No movies found",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
 
             SwipeRefresh(
                 state = rememberSwipeRefreshState(isRefreshing),
                 onRefresh = { viewModel.refreshMovies() },
                 modifier = Modifier.weight(1f)
-            ) { AnimatedVisibility(visible=viewModel.genres.isNotEmpty() && movies.isNotEmpty(),
+            ) { AnimatedVisibility(visible=genres.isNotEmpty() && movies.isNotEmpty(),
                 enter=fadeIn(animationSpec=tween(durationMillis=600))) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
@@ -231,26 +253,26 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Button(
                         onClick = { viewModel.loadPreviousPage() },
-                        enabled = viewModel.currentPage > 1,
+                        enabled = currentPage > 1,
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
                     ) {
                         Text("Previous")
                     }
 
                     Text(
-                        text = "Page ${viewModel.currentPage} of ${viewModel.totalPages}",
+                        text = "Page ${currentPage} of ${totalPages}",
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(horizontal = 8.dp)
                     )
 
                     Button(
                         onClick = { viewModel.loadNextPage() },
-                        enabled = viewModel.currentPage < viewModel.totalPages,
+                        enabled = currentPage < totalPages,
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
                     ) {
                         Text("Next")

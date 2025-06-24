@@ -1,188 +1,88 @@
 package com.example.movie
 
-import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import retrofit2.http.Path
 
 class MovieViewModel : ViewModel() {
+    private val movieRepository= MovieRepository
+    val movies get() = movieRepository.movies
+    val genres get() = movieRepository.genres
+    val error get() = movieRepository.error
+    val selectedGenreIds:StateFlow<List<Int>> get() = movieRepository.selectedGenreIds
+    val currentPage:StateFlow<Int> get() = movieRepository.currentPage
+    val totalPages: StateFlow<Int> get() = movieRepository.totalPages
+    val isRefreshing: StateFlow<Boolean> get() = movieRepository.isRefreshing
+    val selectedMovie get()= movieRepository.selectedMovie
+    val cast get()=movieRepository.cast
+    val lastQuery get()=movieRepository.lastQuery
 
-    private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing: StateFlow<Boolean> = _isRefreshing
-
-    var movies by mutableStateOf<List<Movie>>(emptyList())
-        private set
-
-    var error by mutableStateOf<String?>(null)
-        private set
-
-    var cast by mutableStateOf<List<Actor>>(emptyList())
-        private set
-
-    var selectedMovie by mutableStateOf<Movie?>(null)
-        private set
-
-    var genres by mutableStateOf<List<Genre>>(emptyList())
-        private set
-
-    var selectedGenreIds by mutableStateOf<List<Int>>(emptyList())
-
-    var currentPage by mutableStateOf(1)
-        private set
-
-    var totalPages by mutableStateOf(1)
-        private set
-
-    var lastQuery by mutableStateOf("")
-        private set
-
-    private val apiKey = "63331023e6b62fc328b87bd9bc6dbfbe"
-
-    private enum class FetchMode { DEFAULT, GENRE, SEARCH }
-    private var lastMode = FetchMode.DEFAULT
-
-    fun loadMovies(page: Int = 1, query: String = "", genres: List<Int> = emptyList()) {
+    fun searchMovies(query: String) {
         viewModelScope.launch {
-            try {
-                if (query.isNotBlank() && genres.isNotEmpty()) {
-                    val response = RetrofitInstance.api.searchMovies(apiKey, query, page)
-                    val filteredResults = response.results.filter { movie ->
-                        movie.genreIds.any { genres.contains(it) }
-                    }
-                    currentPage = page
-                    totalPages = response.total_pages
-                    movies = filteredResults
-                    error = null
-                    lastMode = FetchMode.SEARCH
-                    lastQuery = query
-                    selectedGenreIds = genres
-                } else if (query.isNotBlank()) {
-                    val response = RetrofitInstance.api.searchMovies(apiKey, query, page)
-                    currentPage = page
-                    totalPages = response.total_pages
-                    movies = response.results
-                    error = null
-                    lastMode = FetchMode.SEARCH
-                    lastQuery = query
-                    selectedGenreIds = emptyList()
-                } else if (genres.isNotEmpty()) {
-                    val genresParam = genres.joinToString(",")
-                    val response = RetrofitInstance.api.getMoviesByGenre(apiKey, genresParam, page)
-                    currentPage = page
-                    totalPages = response.total_pages
-                    movies = response.results
-                    error = null
-                    lastMode = FetchMode.GENRE
-                    lastQuery = ""
-                    selectedGenreIds = genres
-                } else {
-                    val response = RetrofitInstance.api.getLatestMovies(apiKey, page)
-                    currentPage = page
-                    totalPages = response.total_pages
-                    movies = response.results
-                    error = null
-                    lastMode = FetchMode.DEFAULT
-                    lastQuery = ""
-                    selectedGenreIds = emptyList()
-                }
-            } catch (e: Exception) {
-                error = ErrorMessage(e)
-            }
+            movieRepository.lastQuery.value=query
+            movieRepository.loadMovies(1,query,movieRepository.selectedGenreIds.value)
         }
     }
 
-    fun searchMovies(query: String) {
-        currentPage = 1
-        lastQuery = query
-        loadMovies(1, query, selectedGenreIds)
-    }
-
     fun fetchMoviesByGenres() {
-        currentPage = 1
-        loadMovies(1, lastQuery, selectedGenreIds)
+        viewModelScope.launch {
+            movieRepository.fetchMoviesByGenres()
+        }
     }
 
     fun fetchMovies() {
-        currentPage = 1
-        selectedGenreIds = emptyList()
-        lastQuery = ""
-        loadMovies()
+        viewModelScope.launch {
+            movieRepository.fetchMovies()
+        }
     }
 
     fun loadNextPage() {
-        if (currentPage < totalPages) {
-            loadMovies(currentPage + 1, lastQuery, selectedGenreIds)
+        viewModelScope.launch {
+            movieRepository.loadNextPage()
         }
     }
 
     fun loadPreviousPage() {
-        if (currentPage > 1) {
-            loadMovies(currentPage - 1, lastQuery, selectedGenreIds)
+        viewModelScope.launch {
+            movieRepository.loadPreviousPage()
         }
     }
 
     fun refreshMovies() {
         viewModelScope.launch {
-            _isRefreshing.value = true
-            loadMovies(currentPage, lastQuery, selectedGenreIds)
-            _isRefreshing.value = false
+            movieRepository.refreshMovies()
         }
     }
 
     fun fetchGenres() {
         viewModelScope.launch {
-            try {
-                val response = RetrofitInstance.api.getGenres(apiKey)
-                genres = response.genres
-                error = null
-            } catch (e: Exception) {
-                error = ErrorMessage(e)
-            }
+            movieRepository.fetchGenres()
         }
     }
 
     fun fetchMovieCredits(movieId: Int) {
         viewModelScope.launch {
-            try {
-                val response = RetrofitInstance.api.getMovieCredits(movieId, apiKey)
-                cast = response.cast
-            } catch (e: Exception) {
-                cast = emptyList()
-            }
+            movieRepository.fetchMovieCredits(movieId)
         }
     }
 
     fun fetchMovieDetails(movieId: Int) {
         viewModelScope.launch {
-            try {
-                selectedMovie = RetrofitInstance.api.getMovieDetails(movieId, apiKey)
-                error = null
-                fetchMovieCredits(movieId)
-            } catch (e: Exception) {
-                selectedMovie = null
-                error = ErrorMessage(e)
-            }
+            movieRepository.fetchMovieDetails(movieId)
         }
     }
 
     fun toggleGenreSelection(genreId: Int) {
-        selectedGenreIds = if (selectedGenreIds.contains(genreId)) {
-            selectedGenreIds - genreId
-        } else {
-            selectedGenreIds + genreId
+        viewModelScope.launch {
+            movieRepository.toggleGenreSelection(genreId)
         }
-        currentPage = 1
-        loadMovies(1, lastQuery, selectedGenreIds)
     }
 
     fun clearSelectedGenres() {
-        selectedGenreIds = emptyList()
-        currentPage = 1
-        loadMovies(1, lastQuery, selectedGenreIds)
+        viewModelScope.launch {
+            movieRepository.clearSelectedGenres()
+        }
     }
 
     fun getImageUrl(posterPath: String?): String? {
@@ -193,7 +93,7 @@ class MovieViewModel : ViewModel() {
         return backdropPath?.let { "https://image.tmdb.org/t/p/w780$it" }
     }
 
-    private fun ErrorMessage(e: Exception): String {
+    fun ErrorMessage(e: Exception): String {
         return when {
             e.message?.contains("Unable to resolve host", true) == true -> "No internet connection."
             e.message?.contains("timeout", true) == true -> "Request timed out."

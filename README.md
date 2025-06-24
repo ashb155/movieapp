@@ -1,6 +1,6 @@
-# MovieApp
+# Flixist
 
-**MovieApp** is an Android application built using Kotlin that allows users to browse, search, and view detailed information about movies using data from the TMDB API. The app demonstrates clean architecture practices and integrates several modern Android development tools.
+**Flixist** is an Android application built using Kotlin that allows users to browse, search, and view detailed information about movies using data from the TMDB API. The app demonstrates clean architecture practices and integrates several modern Android development tools.
 
 ## Features
 

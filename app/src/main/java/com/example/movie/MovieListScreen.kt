@@ -33,11 +33,14 @@ import androidx.compose.ui.layout.ContentScale
 fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int) -> Unit) {
     val movies by viewModel.movies.collectAsState()
     val error by viewModel.error.collectAsState()
-    var searchQuery by rememberSaveable { mutableStateOf("") }
+    val repoSearchQuery by viewModel.lastQuery.collectAsState()
+    var searchQuery by rememberSaveable { mutableStateOf(repoSearchQuery) }
     val listState = rememberLazyGridState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val genres by viewModel.genres.collectAsState()
     val selectedGenreIds by viewModel.selectedGenreIds.collectAsState()
+    val currentPage by viewModel.currentPage.collectAsState()
+    val totalPages by viewModel.totalPages.collectAsState()
 
     LaunchedEffect(viewModel.selectedGenreIds) {
         viewModel.fetchMoviesByGenres()
@@ -46,14 +49,16 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
 
     LaunchedEffect(searchQuery) {
         delay(500)
-        if (searchQuery.isBlank()) {
-            viewModel.fetchMoviesByGenres()
-        } else {
-            viewModel.searchMovies(searchQuery)
+        if (searchQuery != repoSearchQuery) {
+            if (searchQuery.isBlank()) {
+                viewModel.fetchMovies()
+            } else {
+                viewModel.searchMovies(searchQuery)
+            }
         }
     }
 
-    LaunchedEffect(viewModel.currentPage) {
+    LaunchedEffect(currentPage) {
         listState.animateScrollToItem(0)
     }
 
@@ -170,7 +175,6 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                             selected = selectedGenreIds.contains(genre.id),
                             onClick = {
                                 viewModel.toggleGenreSelection(genre.id)
-                                viewModel.fetchMoviesByGenres()
                             },
                             label = { Text(genre.name) },
                             modifier = Modifier.padding(horizontal = 4.dp)
@@ -183,7 +187,6 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                 Button(
                     onClick = {
                         viewModel.clearSelectedGenres()
-                        viewModel.fetchMoviesByGenres()
                     },
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
@@ -234,26 +237,26 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Button(
                         onClick = { viewModel.loadPreviousPage() },
-                        enabled = viewModel.currentPage > 1,
+                        enabled = currentPage > 1,
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
                     ) {
                         Text("Previous")
                     }
 
                     Text(
-                        text = "Page ${viewModel.currentPage} of ${viewModel.totalPages}",
+                        text = "Page ${currentPage} of ${totalPages}",
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(horizontal = 8.dp)
                     )
 
                     Button(
                         onClick = { viewModel.loadNextPage() },
-                        enabled = viewModel.currentPage < viewModel.totalPages,
+                        enabled = currentPage < totalPages,
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
                     ) {
                         Text("Next")

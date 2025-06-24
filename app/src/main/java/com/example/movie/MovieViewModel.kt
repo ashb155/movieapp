@@ -10,16 +10,18 @@ class MovieViewModel : ViewModel() {
     val movies get() = movieRepository.movies
     val genres get() = movieRepository.genres
     val error get() = movieRepository.error
-    val selectedGenreIds get() = movieRepository.selectedGenreIds
-    val currentPage get() = movieRepository.currentPage.value
-    val totalPages get() = movieRepository.totalPages.value
+    val selectedGenreIds:StateFlow<List<Int>> get() = movieRepository.selectedGenreIds
+    val currentPage:StateFlow<Int> get() = movieRepository.currentPage
+    val totalPages: StateFlow<Int> get() = movieRepository.totalPages
     val isRefreshing: StateFlow<Boolean> get() = movieRepository.isRefreshing
     val selectedMovie get()= movieRepository.selectedMovie
     val cast get()=movieRepository.cast
+    val lastQuery get()=movieRepository.lastQuery
 
     fun searchMovies(query: String) {
         viewModelScope.launch {
-            movieRepository.searchMovies(query)
+            movieRepository.lastQuery.value=query
+            movieRepository.loadMovies(1,query,movieRepository.selectedGenreIds.value)
         }
     }
 

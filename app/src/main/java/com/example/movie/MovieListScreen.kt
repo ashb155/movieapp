@@ -199,6 +199,22 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     Text("Clear")
                 }
             }
+            if (selectedGenreIds.isNotEmpty() && movies.isEmpty()){
+                Box(
+                    modifier=Modifier
+                        .fillMaxSize()
+                        .padding(2.dp),
+                    contentAlignment = Alignment.Center
+                ){
+
+                    Text(
+                        text = "No movies found",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
 
             SwipeRefresh(
                 state = rememberSwipeRefreshState(isRefreshing),

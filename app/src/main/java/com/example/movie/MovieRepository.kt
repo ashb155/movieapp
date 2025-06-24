@@ -17,7 +17,7 @@ class MovieRepository(private val apiService: MovieApiService, ) {
 
 //    suspend fun searchMovies(query: String) = apiService.searchMovies(apiKey, query)
 
-    suspend fun getMovieCredits(movieId: Int) = apiService.getMovieCredits(movieId, apiKey)
+   /* suspend fun getMovieCredits(movieId: Int) = apiService.getMovieCredits(movieId, apiKey)
 
     suspend fun getMovieDetails(movieId: Int) = apiService.getMovieDetails(movieId, apiKey)
 
@@ -25,7 +25,9 @@ class MovieRepository(private val apiService: MovieApiService, ) {
 
     suspend fun getGenres() = apiService.getGenres(apiKey)
 
-    suspend fun getMoviesByGenre(genreIds: String) = apiService.getMoviesByGenre(apiKey, genreIds)
+    suspend fun getMoviesByGenre(genreIds: String) = apiService.getMoviesByGenre(apiKey, genreIds)*/
+
+
 
     var currentPage = MutableStateFlow(1)
 //        private set

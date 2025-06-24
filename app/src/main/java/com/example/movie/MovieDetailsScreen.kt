@@ -33,10 +33,10 @@ fun MovieDetailsScreen(
     viewModel: MovieViewModel = viewModel(),
     onBack: () -> Unit
 ) {
-    val movie = viewModel.selectedMovie
+    val movie by viewModel.selectedMovie.collectAsState()
     val cast by remember { derivedStateOf { viewModel.cast } }
-    val error by remember { derivedStateOf { viewModel.error } }
-    val errorMessage=error
+    val errorMessageState=viewModel.error.collectAsState()
+    val errorMessage=errorMessageState.value
     val scrollState = rememberScrollState()
 
     LaunchedEffect(movieId) {
@@ -82,8 +82,9 @@ fun MovieDetailsScreen(
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        errorMessage?.let{
                         Text(
-                            text = errorMessage,
+                            text = it,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
@@ -100,7 +101,7 @@ fun MovieDetailsScreen(
                     }
                 }
             }
-        }
+        }}
 
     else {
             Column(
@@ -122,12 +123,12 @@ fun MovieDetailsScreen(
                             .padding(bottom = 8.dp)
                             .fillMaxWidth()
                     )
-
+                    movie?.let{nonNullMovie->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(260.dp)
-                    ) { val imageUrl = viewModel.getBackdropUrl(movie.backdropPath)
+                    ) { val imageUrl = viewModel.getBackdropUrl(nonNullMovie.backdropPath)
                         imageUrl?.let { url ->
                             Image(
                                 painter = rememberAsyncImagePainter(url),
@@ -293,4 +294,4 @@ fun MovieDetailsScreen(
             )
         }
     }
-}
+}}

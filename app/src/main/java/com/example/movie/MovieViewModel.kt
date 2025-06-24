@@ -1,53 +1,50 @@
 package com.example.movie
 
-import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import retrofit2.http.Path
 
 class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel() {
 
-    private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing: StateFlow<Boolean> = _isRefreshing
-
-
-    var cast by mutableStateOf<List<Actor>>(emptyList())
-        private set
-
-    var selectedMovie by mutableStateOf<Movie?>(null)
-        private set
-
-    var genres by mutableStateOf<List<Genre>>(emptyList())
-        private set
-
-    private val apiKey = "63331023e6b62fc328b87bd9bc6dbfbe"
-
-    private enum class FetchMode { DEFAULT, GENRE, SEARCH }
-    private var lastMode = FetchMode.DEFAULT
+    val movies get() = movieRepository.movies
+    val genres get() = movieRepository.genres
+    val error get() = movieRepository.error
+    val selectedGenreIds get() = movieRepository.selectedGenreIds
+    val currentPage get() = movieRepository.currentPage.value
+    val totalPages get() = movieRepository.totalPages.value
+    val isRefreshing: StateFlow<Boolean> get() = movieRepository.isRefreshing
+    val selectedMovie get()= movieRepository.selectedMovie
+    val cast get()=movieRepository.cast
 
     fun searchMovies(query: String) {
-        viewModelScope.launch{ movieRepository.searchMovies(query) }
+        viewModelScope.launch {
+            movieRepository.searchMovies(query)
+        }
     }
 
     fun fetchMoviesByGenres() {
-
-        viewModelScope.launch{movieRepository.fetchMoviesByGenres()}
+        viewModelScope.launch {
+            movieRepository.fetchMoviesByGenres()
+        }
+    }
 
     fun fetchMovies() {
-        viewModelScope.launch{movieRepository.loadMovies()}
+        viewModelScope.launch {
+            movieRepository.fetchMovies()
+        }
     }
 
     fun loadNextPage() {
-            viewModelScope.launch{movieRepository.loadNextPage()}
+        viewModelScope.launch {
+            movieRepository.loadNextPage()
+        }
     }
 
     fun loadPreviousPage() {
-            viewModelScope.launch{movieRepository.loadPreviousPage()
-
+        viewModelScope.launch {
+            movieRepository.loadPreviousPage()
+        }
     }
 
     fun refreshMovies() {
@@ -57,30 +54,33 @@ class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel()
     }
 
     fun fetchGenres() {
-        viewModelScope.launch {movieRepository.fetchMovies()
+        viewModelScope.launch {
+            movieRepository.fetchGenres()
         }
     }
 
     fun fetchMovieCredits(movieId: Int) {
         viewModelScope.launch {
             movieRepository.fetchMovieCredits(movieId)
-            }
         }
     }
 
     fun fetchMovieDetails(movieId: Int) {
         viewModelScope.launch {
-           movieRepository.fetchMovieDetails(movieId)
+            movieRepository.fetchMovieDetails(movieId)
         }
     }
 
     fun toggleGenreSelection(genreId: Int) {
-
-        viewModelScope.launch{movieRepository.toggleGenreSelection(genreId)}
+        viewModelScope.launch {
+            movieRepository.toggleGenreSelection(genreId)
+        }
     }
 
     fun clearSelectedGenres() {
-        viewModelScope.launch{movieRepository.clearSelectedGenres()
+        viewModelScope.launch {
+            movieRepository.clearSelectedGenres()
+        }
     }
 
     fun getImageUrl(posterPath: String?): String? {
@@ -99,15 +99,4 @@ class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel()
             else -> "Something went wrong."
         }
     }
-
-    fun fetchMovieDetails(movieId: Int) {
-        viewModelScope.launch{movieRepository.fetchMovieDetails(movieId)}
-    }
-        fun fetchGenres() {
-            viewModelScope.launch{movieRepository.fetchGenres()}
-        }
-    }}}
-
-
-
-
+}

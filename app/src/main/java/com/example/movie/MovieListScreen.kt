@@ -31,11 +31,13 @@ import androidx.compose.ui.layout.ContentScale
 
 @Composable
 fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int) -> Unit) {
-    val movies = viewModel.movies
-    val error = viewModel.error
+    val movies by viewModel.movies.collectAsState()
+    val error by viewModel.error.collectAsState()
     var searchQuery by rememberSaveable { mutableStateOf("") }
     val listState = rememberLazyGridState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val genres by viewModel.genres.collectAsState()
+    val selectedGenreIds by viewModel.selectedGenreIds.collectAsState()
 
     LaunchedEffect(viewModel.selectedGenreIds) {
         viewModel.fetchMoviesByGenres()
@@ -97,8 +99,9 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        error?.let{
                         Text(
-                            text = error,
+                            text = it,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
@@ -116,7 +119,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     }
                 }
             }
-        } else {
+        } }else {
             AnimatedFadeInLogo()
             Spacer(Modifier.padding(2.dp))
 
@@ -127,7 +130,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                 viewModel.fetchGenres()
             }
 
-            if (viewModel.genres.isEmpty()) {
+            if (genres.isEmpty()) {
                 CircularProgressIndicator(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
@@ -156,15 +159,15 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                 LazyRow(modifier = Modifier.padding(vertical = 10.dp)) {
                     item {
                         FilterChip(
-                            selected = viewModel.selectedGenreIds.isEmpty(),
+                            selected = selectedGenreIds.isEmpty(),
                             onClick = { viewModel.fetchMoviesByGenres() },
                             label = { Text("All") },
                             modifier = Modifier.padding(horizontal = 4.dp)
                         )
                     }
-                    items(viewModel.genres) { genre ->
+                    items(genres) { genre ->
                         FilterChip(
-                            selected = viewModel.selectedGenreIds.contains(genre.id),
+                            selected = selectedGenreIds.contains(genre.id),
                             onClick = {
                                 viewModel.toggleGenreSelection(genre.id)
                                 viewModel.fetchMoviesByGenres()
@@ -176,7 +179,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                 }
             }
 
-            if (viewModel.selectedGenreIds.isNotEmpty()) {
+            if (selectedGenreIds.isNotEmpty()) {
                 Button(
                     onClick = {
                         viewModel.clearSelectedGenres()
@@ -198,7 +201,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                 state = rememberSwipeRefreshState(isRefreshing),
                 onRefresh = { viewModel.refreshMovies() },
                 modifier = Modifier.weight(1f)
-            ) { AnimatedVisibility(visible=viewModel.genres.isNotEmpty() && movies.isNotEmpty(),
+            ) { AnimatedVisibility(visible=genres.isNotEmpty() && movies.isNotEmpty(),
                 enter=fadeIn(animationSpec=tween(durationMillis=600))) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),

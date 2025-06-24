@@ -8,26 +8,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class MovieRepository(private val apiService: MovieApiService, ) {
-
+object MovieRepository {
+    private lateinit var apiService: MovieApiService
     private val apiKey = "63331023e6b62fc328b87bd9bc6dbfbe"
     val ret = RetrofitInstance.api
 
     suspend fun getLatestMovies() = apiService.getLatestMovies(apiKey)
-
-//    suspend fun searchMovies(query: String) = apiService.searchMovies(apiKey, query)
-
-   /* suspend fun getMovieCredits(movieId: Int) = apiService.getMovieCredits(movieId, apiKey)
-
-    suspend fun getMovieDetails(movieId: Int) = apiService.getMovieDetails(movieId, apiKey)
-
-    suspend fun getMovieVideos(movieId: Int) = apiService.getMovieVideos(movieId, apiKey)
-
-    suspend fun getGenres() = apiService.getGenres(apiKey)
-
-    suspend fun getMoviesByGenre(genreIds: String) = apiService.getMoviesByGenre(apiKey, genreIds)*/
-
-
 
     var currentPage = MutableStateFlow(1)
 //        private set

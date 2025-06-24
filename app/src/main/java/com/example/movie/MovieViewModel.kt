@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.StateFlow
 
-class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel() {
-
+class MovieViewModel : ViewModel() {
+    private val movieRepository= MovieRepository
     val movies get() = movieRepository.movies
     val genres get() = movieRepository.genres
     val error get() = movieRepository.error

@@ -270,13 +270,13 @@ fun MovieDetailsScreen(
                         Spacer(modifier = Modifier.height(12.dp))
                     }
                 } else {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(8.dp),
-                        strokeWidth = 2.dp
-                    )
-                }
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally)
+                                .padding(8.dp),
+                            strokeWidth = 2.dp
+                        )
+                    }
             }
         }}
 

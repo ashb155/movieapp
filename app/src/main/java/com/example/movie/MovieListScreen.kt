@@ -42,6 +42,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
     val currentPage by viewModel.currentPage.collectAsState()
     val totalPages by viewModel.totalPages.collectAsState()
 
+
     LaunchedEffect(viewModel.selectedGenreIds) {
         viewModel.fetchMoviesByGenres()
         listState.animateScrollToItem(0)

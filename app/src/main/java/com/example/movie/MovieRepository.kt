@@ -185,6 +185,9 @@ object MovieRepository {
 
     suspend fun fetchMovieDetails(movieId: Int) {
         try {
+            selectedMovie.value=null
+            error.value=null
+            cast= emptyList()
             selectedMovie.value = RetrofitInstance.api.getMovieDetails(movieId, apiKey)
             error.value = null
             fetchMovieCredits(movieId)

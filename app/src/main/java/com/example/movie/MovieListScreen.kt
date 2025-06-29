@@ -224,7 +224,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
             ) { AnimatedVisibility(visible=genres.isNotEmpty() && movies.isNotEmpty(),
                 enter=fadeIn(animationSpec=tween(durationMillis=600))) {
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(3),
+                    columns = GridCells.Adaptive(minSize = 90.dp),
                     state = listState,
                     modifier = Modifier
                         .fillMaxSize()

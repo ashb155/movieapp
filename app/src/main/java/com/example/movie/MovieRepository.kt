@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-
+//manages data and handles API calls
 object MovieRepository {
     private lateinit var apiService: MovieApiService
     private val apiKey = "63331023e6b62fc328b87bd9bc6dbfbe"

@@ -11,7 +11,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.Abs
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.LifecycleOwner
-
+//youtube trailer UI
 @Composable
 fun YouTubeTrailerPlayer(trailerKey: String, modifier: Modifier = Modifier) {
     val lifecycleOwner = LocalLifecycleOwner.current

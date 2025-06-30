@@ -3,7 +3,7 @@ package com.example.movie
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
-
+//defining API interface to send requests and handle responses
 interface MovieApiService {
     @GET("movie/now_playing")
     suspend fun getLatestMovies(

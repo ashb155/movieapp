@@ -1,7 +1,7 @@
 package com.example.movie
 
 import com.google.gson.annotations.SerializedName
-
+//data classes
 data class MovieResponse(
     val page: Int,
     val results: List<Movie>,

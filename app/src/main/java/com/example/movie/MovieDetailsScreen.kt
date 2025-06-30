@@ -26,7 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
 
-
+//movie details screen
 @Composable
 fun MovieDetailsScreen(
     movieId: Int,
@@ -38,14 +38,14 @@ fun MovieDetailsScreen(
     val errorMessageState=viewModel.error.collectAsState()
     val errorMessage=errorMessageState.value
     val scrollState = rememberScrollState()
-
+    //fetching details
     LaunchedEffect(movieId) {
         viewModel.fetchMovieDetails(movieId)
     }
 
     Box(modifier = Modifier.fillMaxSize()
         ) {
-
+        //error UI
         if (errorMessage != null) {
             Column(
                 modifier = Modifier
@@ -103,7 +103,7 @@ fun MovieDetailsScreen(
             }
         }}
 
-    else {
+    else { //title and video with backdrop
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -165,7 +165,7 @@ fun MovieDetailsScreen(
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
-
+                    //rating and release
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Row(
                             modifier = Modifier
@@ -216,7 +216,7 @@ fun MovieDetailsScreen(
                             modifier = Modifier.padding(20.dp)
                         )
                     }
-
+                    //cast details
                     if (cast.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(16.dp))
                         Card(
@@ -279,7 +279,7 @@ fun MovieDetailsScreen(
                     }
             }
         }}
-
+        //back icon
         IconButton(
             onClick = onBack,
             modifier = Modifier

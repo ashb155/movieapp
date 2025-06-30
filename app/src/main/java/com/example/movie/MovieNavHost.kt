@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-
+//controls app navigation
 @Composable
 fun MovieNavHost() {
     val navController = rememberNavController()

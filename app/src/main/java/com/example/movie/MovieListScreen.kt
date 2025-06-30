@@ -47,7 +47,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
         viewModel.fetchMoviesByGenres()
         listState.animateScrollToItem(0)
     }
-
+    //search query
     LaunchedEffect(searchQuery) {
         delay(500)
         if (searchQuery != repoSearchQuery) {
@@ -58,7 +58,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
             }
         }
     }
-
+//pagination effect
     LaunchedEffect(currentPage) {
         listState.animateScrollToItem(0)
     }
@@ -69,6 +69,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
+        //error UI
         if (error != null) {
             Column(
                 modifier = Modifier
@@ -126,6 +127,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                 }
             }
         } }else {
+            //UI
             AnimatedFadeInLogo()
             Spacer(Modifier.padding(2.dp))
 
@@ -183,7 +185,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     }
                 }
             }
-
+            //filtered genres
             if (selectedGenreIds.isNotEmpty()) {
                 Button(
                     onClick = {
@@ -216,7 +218,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
                     )
                 }
             }
-
+            //movie list
             SwipeRefresh(
                 state = rememberSwipeRefreshState(isRefreshing),
                 onRefresh = { viewModel.refreshMovies() },
@@ -244,7 +246,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
             }}
 
             Spacer(modifier = Modifier.height(16.dp))
-
+            //pagination buttons
             AnimatedVisibility(
                 visible = listState.firstVisibleItemIndex > 5,
                 enter = fadeIn(),
@@ -283,7 +285,7 @@ fun MovieListScreen(viewModel: MovieViewModel = viewModel(), onMovieClick: (Int)
         }
     }
 }
-
+//movie item card
 @Composable
 fun MovieItem(movie: Movie, viewModel: MovieViewModel, onClick: () -> Unit) {
     Card(
@@ -326,7 +328,7 @@ fun MovieItem(movie: Movie, viewModel: MovieViewModel, onClick: () -> Unit) {
         }
     }
 }
-
+//animated logo
 @Composable
 fun AnimatedFadeInLogo() {
     var visible by remember { mutableStateOf(false) }

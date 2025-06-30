@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.StateFlow
-
+//handles UI logic
 class MovieViewModel : ViewModel() {
     private val movieRepository= MovieRepository
     val movies get() = movieRepository.movies
